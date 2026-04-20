@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>진로 맞춤형 고교학점제 과목 설계 대시보드</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS: 브라우저에서 Excel 파일 읽기/쓰기 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @keyframes glow-purple {
+            0%, 100% { box-shadow: 0 0 15px rgba(147,51,234,.6), 0 0 30px rgba(147,51,234,.4); }
+            50% { box-shadow: 0 0 25px rgba(147,51,234,.8), 0 0 50px rgba(147,51,234,.6); }
+        }
+        @keyframes glow-gold {
+            0%, 100% { box-shadow: 0 0 15px rgba(251,191,36,.7), 0 0 30px rgba(251,191,36,.5); }
+            50% { box-shadow: 0 0 25px rgba(251,191,36,.9), 0 0 50px rgba(251,191,36,.7); }
+        }
+        .glow-purple { animation: glow-purple 2s ease-in-out infinite; }
+        .glow-gold   { animation: glow-gold   2s ease-in-out infinite; }
+        .gradient-bg { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useMemo, useRef } = React;
+
+/* ══════════════════════════════════════════════════════════
+   기본 학교 데이터 (양지고등학교)
+══════════════════════════════════════════════════════════ */
+const DEFAULT_SCHOOL = {
+    schoolName: '양지고등학교',
+    subjects: {
+        '2-1': [
+            { name:'언어생활 탐구',   units:3, category:'기초',   group:'group1' },
+            { name:'미디어 영어',     units:3, category:'기초',   group:'group1' },
+            { name:'세계사',          units:3, category:'탐구',   group:'group1' },
+            { name:'세계시민과 지리', units:3, category:'탐구',   group:'group1' },
+            { name:'현대사회와 윤리', units:3, category:'탐구',   group:'group1' },
+            { name:'사회와 문화',     units:3, category:'탐구',   group:'group1' },
+            { name:'경제',            units:3, category:'탐구',   group:'group1' },
+            { name:'물리학',          units:3, category:'탐구',   group:'group1' },
+            { name:'화학',            units:3, category:'탐구',   group:'group1' },
+            { name:'생명과학',        units:3, category:'탐구',   group:'group1' },
+            { name:'지구과학',        units:3, category:'탐구',   group:'group1' },
+            { name:'중국어',          units:3, category:'생활교양',group:'group2' },
+            { name:'일본어',          units:3, category:'생활교양',group:'group2' },
+            { name:'한문',            units:3, category:'생활교양',group:'group2' },
+            { name:'융합과학 탐구',   units:3, category:'탐구',   group:'joint'  },
+            { name:'과학과제 연구',   units:3, category:'탐구',   group:'joint'  },
+        ],
+        '2-2': [
+            { name:'문학과 영상',              units:3, category:'기초',   group:'group1' },
+            { name:'기하',                     units:3, category:'기초',   group:'group1' },
+            { name:'영미 문학읽기',            units:3, category:'기초',   group:'group1' },
+            { name:'역사로 탐구하는 현대세계', units:3, category:'탐구',   group:'group1' },
+            { name:'도시의 미래탐구',          units:3, category:'탐구',   group:'group1' },
+            { name:'기후변화와 지속가능한 세계',units:3, category:'탐구',  group:'group1' },
+            { name:'윤리와 사상',              units:3, category:'탐구',   group:'group1' },
+            { name:'정치',                     units:3, category:'탐구',   group:'group1' },
+            { name:'법과 사회',                units:3, category:'탐구',   group:'group1' },
+            { name:'전자기와 양자',            units:3, category:'탐구',   group:'group1' },
+            { name:'물질과 에너지',            units:3, category:'탐구',   group:'group1' },
+            { name:'세포와 물질대사',          units:3, category:'탐구',   group:'group1' },
+            { name:'지구시스템과학',           units:3, category:'탐구',   group:'group1' },
+            { name:'인공지능 기초',            units:3, category:'생활교양',group:'group1' },
+            { name:'중국어 회화',              units:3, category:'생활교양',group:'group2' },
+            { name:'일본어 회화',              units:3, category:'생활교양',group:'group2' },
+            { name:'언어생활과 한문',          units:3, category:'생활교양',group:'group2' },
+            { name:'과학과제 연구',            units:3, category:'탐구',   group:'joint'  },
+        ],
+        '3-1': [
+            { name:'매체 의사소통',      units:3, category:'기초',   group:'group1' },
+            { name:'미적분2',            units:3, category:'기초',   group:'group1' },
+            { name:'경제수학',           units:3, category:'기초',   group:'group1' },
+            { name:'심화 영어',          units:3, category:'기초',   group:'group1' },
+            { name:'세계 문화와 영어',   units:3, category:'탐구',   group:'group1' },
+            { name:'동아시아 역사기행',  units:3, category:'탐구',   group:'group2' },
+            { name:'한국지리탐구',       units:3, category:'탐구',   group:'group2' },
+            { name:'윤리 문제 탐구',     units:3, category:'탐구',   group:'group2' },
+            { name:'사회문제 탐구',      units:3, category:'탐구',   group:'group2' },
+            { name:'국제관계의 이해',    units:3, category:'탐구',   group:'group2' },
+            { name:'역학과 에너지',      units:3, category:'탐구',   group:'group2' },
+            { name:'화학 반응의 세계',   units:3, category:'탐구',   group:'group2' },
+            { name:'생물의 유전',        units:3, category:'탐구',   group:'group2' },
+            { name:'행성우주과학',       units:3, category:'탐구',   group:'group2' },
+            { name:'기후변화와 환경생태',units:3, category:'탐구',   group:'group2' },
+            { name:'로봇과 공학세계',    units:3, category:'생활교양',group:'group2' },
+            { name:'정보과학',           units:3, category:'탐구',   group:'group2' },
+            { name:'토론과 논술 활용',   units:3, category:'생활교양',group:'group2' },
+            { name:'생활과학 탐구',      units:3, category:'생활교양',group:'group2' },
+            { name:'중국 문화',          units:3, category:'생활교양',group:'group2' },
+            { name:'일본 문화',          units:3, category:'생활교양',group:'group2' },
+            { name:'한문 고전 읽기',     units:3, category:'생활교양',group:'group2' },
+            { name:'음악 감상과 비평',   units:3, category:'예체능', group:'group3' },
+            { name:'미술 감상과 비평',   units:2, category:'예체능', group:'group3' },
+        ],
+        '3-2': [
+            { name:'독서토론과 글쓰기', units:3, category:'기초',   group:'group1' },
+            { name:'직무의사 소통',     units:3, category:'기초',   group:'group1' },
+            { name:'수학과 문화',       units:3, category:'기초',   group:'group1' },
+            { name:'직무영어',          units:3, category:'기초',   group:'group1' },
+            { name:'실생활 영어 회화',  units:3, category:'기초',   group:'group1' },
+            { name:'문화로 보는 한국사',units:3, category:'탐구',   group:'group2' },
+            { name:'여행지리',          units:3, category:'탐구',   group:'group2' },
+            { name:'인문학과 윤리',     units:3, category:'탐구',   group:'group2' },
+            { name:'금융과 경제생활',   units:3, category:'탐구',   group:'group2' },
+            { name:'역학과 에너지',     units:3, category:'탐구',   group:'group2' },
+            { name:'화학 반응의 세계',  units:3, category:'탐구',   group:'group2' },
+            { name:'생물의 유전',       units:3, category:'탐구',   group:'group2' },
+            { name:'행성우주과학',      units:3, category:'탐구',   group:'group2' },
+            { name:'과학의 역사와 문화',units:3, category:'탐구',   group:'group2' },
+            { name:'정보과학',          units:3, category:'탐구',   group:'group2' },
+            { name:'로봇과 공학세계',   units:3, category:'생활교양',group:'group2' },
+            { name:'생활과학탐구',      units:3, category:'생활교양',group:'group2' },
+            { name:'중국 문화',         units:3, category:'생활교양',group:'group2' },
+            { name:'일본 문화',         units:3, category:'생활교양',group:'group2' },
+            { name:'한문 고전 읽기',    units:3, category:'생활교양',group:'group2' },
+            { name:'음악과미디어',      units:3, category:'예체능', group:'group3' },
+            { name:'미술과 매체',       units:3, category:'예체능', group:'group3' },
+            { name:'생태와 환경',       units:2, category:'예체능', group:'group4' },
+            { name:'인간과 경제활동',   units:2, category:'예체능', group:'group4' },
+            { name:'인간과 심리',       units:2, category:'생활교양',group:'group4' },
+        ]
+    },
+    groupLimits: {
+        '2-1': {
+            group1: { name:'그룹1', max:4,   desc:'택4'   },
+            group2: { name:'그룹2', max:1,   desc:'택1'   },
+            joint:  { name:'공동교육과정', max:999, desc:'자유선택' }
+        },
+        '2-2': {
+            group1: { name:'그룹1', max:4,   desc:'택4'   },
+            group2: { name:'그룹2', max:1,   desc:'택1'   },
+            joint:  { name:'공동교육과정', max:999, desc:'자유선택' }
+        },
+        '3-1': {
+            group1: { name:'그룹1', max:1, desc:'택1' },
+            group2: { name:'그룹2', max:3, desc:'택3' },
+            group3: { name:'그룹3', max:1, desc:'택1' }
+        },
+        '3-2': {
+            group1: { name:'그룹1', max:1, desc:'택1' },
+            group2: { name:'그룹2', max:2, desc:'택2' },
+            group3: { name:'그룹3', max:1, desc:'택1' },
+            group4: { name:'그룹4', max:2, desc:'택2' }
+        }
+    }
+};
+
+/* ══════════════════════════════════════════════════════════
+   대학 권장과목 데이터
+   출처: 2028학년도 권역별 대학별 권장과목 (경희대·고려대·서울대·중앙대·한양대·건국대 등)
+   핵심: 여러 대학이 필수적으로 요구하는 과목
+   권장: 가급적 이수를 권장하는 과목
+══════════════════════════════════════════════════════════ */
+const MAJOR_DATA = {
+    /* 공학계열 */
+    '전자·전기·통신공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','물리학','역학과 에너지'],
+        recommended: ['전자기와 양자','기하','화학','물질과 에너지','정보']
+    },
+    '컴퓨터·소프트웨어공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','확률과 통계'],
+        recommended: ['기하','물리학','정보','역학과 에너지','인공지능 수학']
+    },
+    '인공지능·데이터공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','확률과 통계'],
+        recommended: ['기하','인공지능 수학','물리학','정보']
+    },
+    '기계·항공우주공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','물리학'],
+        recommended: ['역학과 에너지','기하','화학','물질과 에너지']
+    },
+    '화학공학·신소재공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','물리학','화학'],
+        recommended: ['물질과 에너지','화학반응의 세계','기하','역학과 에너지']
+    },
+    '건축·토목공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','물리학'],
+        recommended: ['기하','역학과 에너지','화학','도시의 미래 탐구']
+    },
+    '산업·시스템공학과': {
+        core: ['대수','미적분Ⅰ','확률과 통계'],
+        recommended: ['미적분Ⅱ','물리학','역학과 에너지','정보','인공지능 수학']
+    },
+    '환경·에너지공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','화학'],
+        recommended: ['물질과 에너지','화학반응의 세계','생명과학','지구과학']
+    },
+    '반도체·재료공학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','물리학','화학'],
+        recommended: ['전자기와 양자','물질과 에너지','화학반응의 세계','기하']
+    },
+    '조선해양공학과': {
+        core: ['대수','미적분Ⅰ','물리학'],
+        recommended: ['화학','역학과 에너지','미적분Ⅱ','기하']
+    },
+    /* 자연과학계열 */
+    '수학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','기하'],
+        recommended: ['확률과 통계','물리학','인공지능 수학','수학과제 탐구']
+    },
+    '물리·천문학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','물리학'],
+        recommended: ['역학과 에너지','전자기와 양자','기하','화학']
+    },
+    '화학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','화학'],
+        recommended: ['물질과 에너지','화학반응의 세계','생명과학','물리학']
+    },
+    '생명과학·생물학과': {
+        core: ['대수','미적분Ⅰ','화학','생명과학'],
+        recommended: ['세포와 물질대사','생물의 유전','미적분Ⅱ','물리학']
+    },
+    '지구환경·지질학과': {
+        core: ['대수','미적분Ⅰ','물리학','지구과학'],
+        recommended: ['지구시스템과학','행성우주과학','화학','기후변화와 지속가능한 세계']
+    },
+    '통계·데이터과학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','확률과 통계'],
+        recommended: ['기하','인공지능 수학','정보','영어Ⅰ']
+    },
+    /* 의약계열 */
+    '의예과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','화학','생명과학'],
+        recommended: ['물질과 에너지','세포와 물질대사','생물의 유전','물리학']
+    },
+    '치의예과·한의예과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','화학','생명과학'],
+        recommended: ['세포와 물질대사','생물의 유전','물질과 에너지','물리학']
+    },
+    '수의예과': {
+        core: ['영어Ⅰ','화학','생명과학'],
+        recommended: ['세포와 물질대사','생물의 유전','대수','미적분Ⅰ']
+    },
+    '약학과': {
+        core: ['대수','미적분Ⅰ','미적분Ⅱ','화학','생명과학'],
+        recommended: ['물질과 에너지','화학반응의 세계','세포와 물질대사','물리학']
+    },
+    '간호학과': {
+        core: ['영어Ⅰ','화학','생명과학'],
+        recommended: ['수학','세포와 물질대사','물질과 에너지','화학반응의 세계']
+    },
+    '보건·의료계열': {
+        core: ['생명과학','영어Ⅰ'],
+        recommended: ['화학','수학','세포와 물질대사','물질과 에너지']
+    },
+    /* 생명·농업계열 */
+    '생명공학·바이오공학과': {
+        core: ['대수','미적분Ⅰ','화학','생명과학'],
+        recommended: ['세포와 물질대사','생물의 유전','물질과 에너지','화학반응의 세계']
+    },
+    '농업·식물자원학과': {
+        core: ['영어Ⅰ','화학','생명과학'],
+        recommended: ['세포와 물질대사','지구과학','기후변화와 지속가능한 세계','물질과 에너지']
+    },
+    '식품영양·조리학과': {
+        core: ['화학','생명과학'],
+        recommended: ['세포와 물질대사','물질과 에너지','영어Ⅰ','수학']
+    },
+    /* 상경계열 */
+    '경영·경제학과': {
+        core: ['대수','미적분Ⅰ','확률과 통계','영어Ⅰ'],
+        recommended: ['경제','사회와 문화','미적분Ⅱ','금융과 경제생활']
+    },
+    '회계·재무학과': {
+        core: ['대수','미적분Ⅰ','확률과 통계'],
+        recommended: ['경제','금융과 경제생활','영어Ⅰ','사회와 문화']
+    },
+    '국제통상·무역학과': {
+        core: ['영어Ⅰ','사회와 문화'],
+        recommended: ['경제','국제 관계의 이해','확률과 통계','세계지리 탐구']
+    },
+    '관광·호텔경영학과': {
+        core: ['영어Ⅰ','영어Ⅱ'],
+        recommended: ['영어회화','세계지리 탐구','사회와 문화','경제']
+    },
+    /* 인문사회계열 */
+    '심리학과': {
+        core: ['사회와 문화','영어Ⅰ'],
+        recommended: ['인간과 심리','생활과 윤리','화법과 작문','확률과 통계']
+    },
+    '사회학·사회복지학과': {
+        core: ['사회와 문화','현대사회와 윤리'],
+        recommended: ['화법과 작문','영어Ⅰ','인간과 심리','생활과 윤리']
+    },
+    '정치외교·행정학과': {
+        core: ['사회와 문화','영어Ⅰ'],
+        recommended: ['정치와 법','국제 관계의 이해','현대사회와 윤리','경제']
+    },
+    '법학과': {
+        core: ['사회와 문화','정치와 법'],
+        recommended: ['현대사회와 윤리','화법과 작문','영어Ⅰ','윤리와 사상']
+    },
+    '국어국문·문예창작학과': {
+        core: ['화법과 작문','독서와 작문','문학'],
+        recommended: ['언어와 매체','매체 의사소통','독서 토론과 글쓰기','주제 탐구 독서']
+    },
+    '영어영문·외국어학과': {
+        core: ['영어Ⅰ','영어Ⅱ'],
+        recommended: ['영어 발표와 토론','영미 문학 읽기','사회와 문화','세계지리 탐구']
+    },
+    '사학·고고학과': {
+        core: ['한국사','동아시아사'],
+        recommended: ['세계사','역사로 탐구하는 현대세계','동아시아 역사기행','화법과 작문']
+    },
+    '지리학과': {
+        core: ['한국지리 탐구','세계지리 탐구'],
+        recommended: ['도시의 미래 탐구','기후변화와 지속가능한 세계','사회와 문화']
+    },
+    '철학·윤리학과': {
+        core: ['생활과 윤리','윤리와 사상'],
+        recommended: ['인문학과 윤리','화법과 작문','사회와 문화','현대사회와 윤리']
+    },
+    '언론정보·미디어학과': {
+        core: ['화법과 작문','사회와 문화','영어Ⅰ'],
+        recommended: ['매체 의사소통','언어와 매체','정치와 법','독서 토론과 글쓰기']
+    },
+    '교육학과': {
+        core: ['화법과 작문','영어Ⅰ','사회와 문화'],
+        recommended: ['독서와 작문','교육의 이해','인간과 심리','생활과 윤리']
+    },
+    '경찰행정학과': {
+        core: ['영어Ⅰ','사회와 문화'],
+        recommended: ['생활과 윤리','정치와 법','확률과 통계']
+    },
+    '문헌정보학과': {
+        core: ['화법과 작문','독서와 작문','영어Ⅰ'],
+        recommended: ['사회와 문화','정보','언어와 매체','주제 탐구 독서']
+    },
+    '행정학과': {
+        core: ['사회와 문화','영어Ⅰ'],
+        recommended: ['확률과 통계','정치와 법','현대사회와 윤리','국제 관계의 이해']
+    },
+    /* 예체능계열 */
+    '디자인·미술학과': {
+        core: [],
+        recommended: ['미술 감상과 비평','미술과 매체','매체 의사소통']
+    },
+    '음악학과': {
+        core: [],
+        recommended: ['음악 감상과 비평','음악과 미디어']
+    },
+    '체육·스포츠학과': {
+        core: [],
+        recommended: ['체육1','체육2','운동과 건강','생명과학','스포츠 과학']
+    },
+    /* 교육계열 */
+    '국어교육과': {
+        core: ['화법과 작문','독서와 작문','문학'],
+        recommended: ['언어와 매체','매체 의사소통','주제 탐구 독서','독서 토론과 글쓰기']
+    },
+    '영어교육과': {
+        core: ['영어Ⅰ','영어Ⅱ'],
+        recommended: ['영어독해와 작문','영어회화','영어 발표와 토론','심화 영어']
+    },
+    '수학교육과': {
+        core: ['대수','미적분Ⅰ','확률과 통계'],
+        recommended: ['미적분Ⅱ','기하','수학과제 탐구','인공지능 수학']
+    },
+    '역사교육과': {
+        core: ['한국사','동아시아사'],
+        recommended: ['세계사','생활과 윤리','사회와 문화','화법과 작문']
+    },
+    '지리교육과': {
+        core: ['한국지리 탐구','세계지리 탐구'],
+        recommended: ['도시의 미래 탐구','기후변화와 지속가능한 세계','사회와 문화','생활과 윤리']
+    },
+    '윤리교육과': {
+        core: ['생활과 윤리','윤리와 사상'],
+        recommended: ['인문학과 윤리','철학','사회와 문화','화법과 작문']
+    },
+    '물리교육과': {
+        core: ['대수','미적분Ⅰ','물리학'],
+        recommended: ['역학과 에너지','전자기와 양자','미적분Ⅱ','기하']
+    },
+    '화학교육과': {
+        core: ['대수','미적분Ⅰ','화학'],
+        recommended: ['물질과 에너지','화학반응의 세계','생명과학','미적분Ⅱ']
+    },
+    '생물교육과': {
+        core: ['영어Ⅰ','생명과학'],
+        recommended: ['세포와 물질대사','화학','수학']
+    },
+    '지구과학교육과': {
+        core: ['대수','미적분Ⅰ','물리학','지구과학'],
+        recommended: ['행성우주과학','지구시스템과학','화학']
+    },
+    '특수교육과': {
+        core: ['화법과 작문','독서와 작문'],
+        recommended: ['사회와 문화','수학','윤리와 사상','교육의 이해']
+    },
+    '과학교육과': {
+        core: ['물리학','화학','생명과학','지구과학'],
+        recommended: ['역학과 에너지','물질과 에너지','세포와 물질대사','과학의 역사와 문화']
+    },
+    '가정교육과': {
+        core: ['기술·가정','화학'],
+        recommended: ['생명과학','사회와 문화','생활과학 탐구','식품과 영양']
+    },
+    /* 보건·복지계열 */
+    '물리치료학과': {
+        core: ['영어Ⅰ','생명과학'],
+        recommended: ['물리학','화학','수학']
+    },
+    '작업치료학과': {
+        core: ['영어Ⅰ','수학'],
+        recommended: ['화법과 작문','사회와 문화','생명과학']
+    },
+    '언어치료학과': {
+        core: ['화법과 작문','독서와 작문','영어Ⅰ'],
+        recommended: ['생명과학','사회와 문화','인간과 심리']
+    },
+    '상담심리학과': {
+        core: ['화법과 작문','독서와 작문'],
+        recommended: ['영어Ⅰ','사회와 문화','생활과 윤리','인간과 심리']
+    },
+    '보건관리학과': {
+        core: ['생명과학','영어Ⅰ'],
+        recommended: ['화학','수학','사회와 문화']
+    },
+    '방사선학과': {
+        core: ['대수','미적분Ⅰ','물리학','화학'],
+        recommended: ['생명과학','미적분Ⅱ','역학과 에너지','전자기와 양자']
+    },
+};
+
+const MAJOR_GROUPS = [
+    { label:'🔧 공학계열',     majors:['전자·전기·통신공학과','컴퓨터·소프트웨어공학과','인공지능·데이터공학과','기계·항공우주공학과','화학공학·신소재공학과','건축·토목공학과','산업·시스템공학과','환경·에너지공학과','반도체·재료공학과','조선해양공학과'] },
+    { label:'🔬 자연과학계열', majors:['수학과','물리·천문학과','화학과','생명과학·생물학과','지구환경·지질학과','통계·데이터과학과'] },
+    { label:'⚕️ 의약계열',     majors:['의예과','치의예과·한의예과','수의예과','약학과','간호학과','보건·의료계열'] },
+    { label:'🧬 생명·농업계열',majors:['생명공학·바이오공학과','농업·식물자원학과','식품영양·조리학과'] },
+    { label:'💼 상경계열',     majors:['경영·경제학과','회계·재무학과','국제통상·무역학과','관광·호텔경영학과'] },
+    { label:'📚 인문사회계열', majors:['심리학과','사회학·사회복지학과','정치외교·행정학과','법학과','국어국문·문예창작학과','영어영문·외국어학과','사학·고고학과','지리학과','철학·윤리학과','언론정보·미디어학과','교육학과','경찰행정학과','문헌정보학과'] },
+    { label:'🎨 예체능계열',   majors:['디자인·미술학과','음악학과','체육·스포츠학과'] },
+    { label:'🏫 교육계열',     majors:['국어교육과','영어교육과','수학교육과','역사교육과','지리교육과','윤리교육과','물리교육과','화학교육과','생물교육과','지구과학교육과','특수교육과','과학교육과','가정교육과'] },
+    { label:'🏥 보건·복지계열',majors:['물리치료학과','작업치료학과','언어치료학과','상담심리학과','보건관리학과','방사선학과'] },
+];
+
+/* ══════════════════════════════════════════════════════════
+   Excel 헬퍼 함수들
+══════════════════════════════════════════════════════════ */
+const SEM_SHEET = { '2-1':'2학년_1학기', '2-2':'2학년_2학기', '3-1':'3학년_1학기', '3-2':'3학년_2학기' };
+const SHEET_SEM = Object.fromEntries(Object.entries(SEM_SHEET).map(([k,v])=>[v,k]));
+const HEADER = ['과목명','단위수','교과영역','그룹코드','그룹이름','최대선택수'];
+const CAT_HINT = '기초 / 탐구 / 생활교양 / 예체능 중 택1';
+const GRP_HINT = 'group1 / group2 / group3 / group4 / joint 중 택1';
+
+/** 현재 schoolData → Excel Blob 생성 */
+function buildExcel(schoolData) {
+    const wb = XLSX.utils.book_new();
+
+    /* 학교정보 시트 */
+    const wsInfo = XLSX.utils.aoa_to_sheet([
+        ['설정항목','값','설명'],
+        ['학교명', schoolData.schoolName, '학교 이름을 입력하세요'],
+    ]);
+    wsInfo['!cols'] = [{wch:14},{wch:24},{wch:40}];
+    XLSX.utils.book_append_sheet(wb, wsInfo, '학교정보');
+
+    /* 작성 안내 시트 */
+    const wsGuide = XLSX.utils.aoa_to_sheet([
+        ['📌 엑셀 작성 방법'],
+        [''],
+        ['1. 학교정보 시트에 학교명을 입력하세요.'],
+        ['2. 각 학기 시트(2학년_1학기 ~ 3학년_2학기)에 과목을 입력하세요.'],
+        ['3. 열 설명:'],
+        ['  - 과목명    : 과목 이름 (예: 물리학, 기하)'],
+        ['  - 단위수    : 이수 단위 수 (예: 2 또는 3)'],
+        ['  - 교과영역  : ' + CAT_HINT],
+        ['  - 그룹코드  : ' + GRP_HINT],
+        ['  - 그룹이름  : 화면에 표시할 그룹 이름 (예: 그룹1, 공동교육과정)'],
+        ['  - 최대선택수: 해당 그룹에서 최대 선택 가능 과목 수 (제한 없으면 999)'],
+        [''],
+        ['※ 같은 그룹코드는 반드시 같은 그룹이름·최대선택수를 사용하세요.'],
+        ['※ 행을 추가/삭제해도 됩니다. 빈 과목명 행은 무시됩니다.'],
+    ]);
+    wsGuide['!cols'] = [{wch:80}];
+    XLSX.utils.book_append_sheet(wb, wsGuide, '📌작성안내');
+
+    /* 각 학기 시트 */
+    Object.entries(SEM_SHEET).forEach(([semKey, sheetName]) => {
+        const subs   = schoolData.subjects[semKey] || [];
+        const limits = schoolData.groupLimits[semKey] || {};
+        const rows   = [HEADER, ['(예시) 물리학', 3, '탐구', 'group1', '그룹1', 4]];
+        subs.forEach(s => {
+            const lim = limits[s.group] || {};
+            rows.push([s.name, s.units, s.category, s.group, lim.name || s.group, lim.max ?? '']);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [{wch:22},{wch:8},{wch:12},{wch:12},{wch:14},{wch:12}];
+        /* 1행(헤더) 배경색 메모 - SheetJS 무료 버전은 스타일 미지원, 주석 처리 */
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    return wb;
+}
+
+/** Excel ArrayBuffer → schoolData 파싱 */
+function parseExcel(arrayBuffer) {
+    const wb = XLSX.read(new Uint8Array(arrayBuffer), { type:'array' });
+
+    /* 학교명 */
+    let schoolName = '우리학교';
+    const wsInfo = wb.Sheets['학교정보'];
+    if (wsInfo) {
+        const rows = XLSX.utils.sheet_to_json(wsInfo, { header:1 });
+        for (const r of rows) {
+            if (r[0] === '학교명') { schoolName = String(r[1] || schoolName); break; }
+        }
+    }
+
+    /* 각 학기 */
+    const subjects     = {};
+    const groupLimits  = {};
+
+    Object.entries(SHEET_SEM).forEach(([sheetName, semKey]) => {
+        if (!wb.Sheets[sheetName]) return;
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header:1 });
+        subjects[semKey]    = [];
+        groupLimits[semKey] = {};
+
+        for (let i = 1; i < rows.length; i++) {
+            const [name, units, category, groupCode, groupName, maxSel] = rows[i];
+            if (!name || name === HEADER[0] || String(name).startsWith('(예시)')) continue;
+            subjects[semKey].push({
+                name:     String(name).trim(),
+                units:    Number(units) || 3,
+                category: String(category || '탐구').trim(),
+                group:    String(groupCode || 'group1').trim()
+            });
+            const code = String(groupCode || 'group1').trim();
+            const max  = Number(maxSel) || 999;
+            if (!groupLimits[semKey][code]) {
+                groupLimits[semKey][code] = {
+                    name: String(groupName || code).trim(),
+                    max,
+                    desc: max >= 999 ? '자유선택' : `택${max}`
+                };
+            }
+        }
+    });
+
+    if (Object.keys(subjects).length === 0)
+        throw new Error('학기 데이터를 찾을 수 없습니다. 시트명을 확인하세요.');
+
+    return { schoolName, subjects, groupLimits };
+}
+
+/* ══════════════════════════════════════════════════════════
+   메인 컴포넌트
+══════════════════════════════════════════════════════════ */
+function App() {
+    const [schoolData, setSchoolData]     = useState(DEFAULT_SCHOOL);
+    const [selectedSubjects, setSelected] = useState([]);
+    const [selectedMajor, setMajor]       = useState('');
+    const [uploadMsg, setUploadMsg]       = useState('');
+
+    /* 추천 과목 */
+    const { coreSubjects, recommendedSubjects } = useMemo(() => {
+        if (!selectedMajor || !MAJOR_DATA[selectedMajor]) return { coreSubjects:[], recommendedSubjects:[] };
+        return { coreSubjects: MAJOR_DATA[selectedMajor].core, recommendedSubjects: MAJOR_DATA[selectedMajor].recommended };
+    }, [selectedMajor]);
+
+    /* 그룹 선택 수 */
+    const getGroupCount = (semester, group) => {
+        const subs = schoolData.subjects[semester] || [];
+        return selectedSubjects.filter(n => subs.some(s => s.name === n && s.group === group)).length;
+    };
+
+    /* 학점 통계 */
+    const creditStats = useMemo(() => {
+        const all  = Object.values(schoolData.subjects).flat();
+        const sel  = selectedSubjects.map(n => all.find(s => s.name === n)).filter(Boolean);
+        const total = sel.reduce((sum,s) => sum + s.units, 0);
+        const byCat = { '기초':0,'탐구':0,'체예술':0,'생활교양':0 };
+        sel.forEach(s => {
+            if (s.category === '예체능') byCat['체예술'] += s.units;
+            else byCat[s.category] = (byCat[s.category] || 0) + s.units;
+        });
+        return { total, byCat };
+    }, [selectedSubjects, schoolData]);
+
+    /* 과목 토글 */
+    const toggleSubject = (name, semester) => {
+        const sub = (schoolData.subjects[semester] || []).find(s => s.name === name);
+        if (!sub) return;
+        if (selectedSubjects.includes(name)) {
+            setSelected(p => p.filter(s => s !== name));
+        } else {
+            const cnt   = getGroupCount(semester, sub.group);
+            const limit = (schoolData.groupLimits[semester] || {})[sub.group];
+            if (limit && cnt >= limit.max) {
+                alert(`${semester} ${limit.name}은(는) 최대 ${limit.max}개까지 선택 가능합니다.`);
+                return;
+            }
+            setSelected(p => [...p, name]);
+        }
+    };
+
+    const isCore        = n => coreSubjects.some(c => n.includes(c) || c.includes(n));
+    const isRecommended = n => recommendedSubjects.some(r => n.includes(r) || r.includes(n));
+
+    const getGrouped = (semester) => {
+        const subs   = schoolData.subjects[semester] || [];
+        const limits = schoolData.groupLimits[semester] || {};
+        const grouped = {};
+        Object.keys(limits).forEach(k => {
+            grouped[k] = { info: limits[k], subjects: subs.filter(s => s.group === k), currentCount: getGroupCount(semester, k) };
+        });
+        return grouped;
+    };
+
+    /* ── Excel 다운로드 ── */
+    const downloadExcel = () => {
+        const wb = buildExcel(schoolData);
+        XLSX.writeFile(wb, `${schoolData.schoolName}_과목양식.xlsx`);
+    };
+
+    /* ── Excel 업로드 ── */
+    const handleUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            try {
+                const data = parseExcel(ev.target.result);
+                setSchoolData(data);
+                setSelected([]);
+                setMajor('');
+                setUploadMsg(`✅ ${data.schoolName} 과목 불러오기 완료`);
+            } catch (err) {
+                alert('파일 처리 오류: ' + err.message + '\n「📌작성안내」 시트를 참고해주세요.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        e.target.value = '';
+    };
+
+    const semLabel = { '2-1':'2학년 1학기','2-2':'2학년 2학기','3-1':'3학년 1학기','3-2':'3학년 2학기' };
+    const semesters = Object.keys(schoolData.subjects);
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* 헤더 */}
+            <header className="gradient-bg text-white shadow-lg">
+                <div className="container mx-auto px-6 py-6">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <h1 className="text-3xl font-bold">🎓 진로 맞춤형 고교학점제 과목 설계 대시보드</h1>
+                        <span style={{fontSize:'0.85rem', fontWeight:'600', opacity:'0.85', background:'rgba(255,255,255,0.18)', borderRadius:'999px', padding:'2px 14px', letterSpacing:'0.03em', whiteSpace:'nowrap'}}>
+                            제작자 : 양지고등학교 이재영 선생님
+                        </span>
+                    </div>
+                    <p className="text-purple-100 mt-2">
+                        🏫 {schoolData.schoolName} &nbsp;|&nbsp; 2028학년도 주요 대학 권장과목 기반 &nbsp;|&nbsp; 그룹별 선택 제한 적용
+                    </p>
+                </div>
+            </header>
+
+            <div className="container mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+                    {/* ── 좌측 패널 ── */}
+                    <div className="lg:col-span-1 space-y-6">
+
+                        {/* 학교 과목 파일 관리 */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <span className="text-2xl mr-2">📂</span>
+                                학교 과목 파일
+                            </h2>
+
+                            <p className="text-xs text-gray-500 mb-3">
+                                엑셀 양식을 내려받아 우리 학교 과목을 입력한 뒤 업로드하세요.
+                            </p>
+
+                            {/* 양식 다운로드 */}
+                            <button
+                                onClick={downloadExcel}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm mb-3"
+                            >
+                                ⬇️ 엑셀 양식 다운로드
+                            </button>
+                            <p className="text-xs text-gray-400 mb-4 text-center">
+                                현재 학교({schoolData.schoolName}) 과목이 채워진 양식이 저장됩니다
+                            </p>
+
+                            {/* 파일 업로드 */}
+                            <label className="flex flex-col items-center justify-center w-full px-4 py-4 bg-green-50 border-2 border-green-300 border-dashed rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
+                                <span className="text-2xl mb-1">📤</span>
+                                <span className="text-sm text-green-700 font-medium">수정한 엑셀 파일 업로드</span>
+                                <span className="text-xs text-green-500 mt-1">.xlsx 파일만 가능</span>
+                                <input type="file" accept=".xlsx,.xls" className="hidden" onChange={handleUpload} />
+                            </label>
+
+                            {uploadMsg && (
+                                <p className="text-xs text-green-600 mt-2 font-medium text-center">{uploadMsg}</p>
+                            )}
+                        </div>
+
+                        {/* 진로 탐색기 */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <span className="text-2xl mr-2">🎯</span>
+                                진로 탐색기
+                            </h2>
+                            <select
+                                value={selectedMajor}
+                                onChange={e => setMajor(e.target.value)}
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors text-sm"
+                            >
+                                <option value="">희망 전공을 선택하세요</option>
+                                {MAJOR_GROUPS.map(g => (
+                                    <optgroup key={g.label} label={g.label}>
+                                        {g.majors.map(m => <option key={m} value={m}>{m}</option>)}
+                                    </optgroup>
+                                ))}
+                            </select>
+
+                            {selectedMajor && (
+                                <div className="mt-4 space-y-3">
+                                    {coreSubjects.length > 0 && (
+                                        <div className="p-4 bg-amber-50 rounded-lg border-2 border-amber-300">
+                                            <p className="text-sm font-bold text-amber-900 mb-1">⭐ 핵심 이수과목 ({coreSubjects.length}개)</p>
+                                            <p className="text-xs text-amber-700">로드맵에서 <span className="font-bold">금색</span>으로 빛나는 과목</p>
+                                            <p className="text-xs text-amber-600 mt-1">{coreSubjects.join(', ')}</p>
+                                        </div>
+                                    )}
+                                    {recommendedSubjects.length > 0 && (
+                                        <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-300">
+                                            <p className="text-sm font-bold text-purple-900 mb-1">✨ 권장 이수과목 ({recommendedSubjects.length}개)</p>
+                                            <p className="text-xs text-purple-700">로드맵에서 <span className="font-bold">보라색</span>으로 빛나는 과목</p>
+                                            <p className="text-xs text-purple-600 mt-1">{recommendedSubjects.join(', ')}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 이수 현황 */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <span className="text-2xl mr-2">📊</span>
+                                이수 현황
+                            </h2>
+                            <div className="mb-6">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-medium text-gray-600">총 이수 학점</span>
+                                    <span className="text-2xl font-bold text-purple-600">{creditStats.total}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                    <div
+                                        className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+                                        style={{ width:`${Math.min((creditStats.total/192)*100,100)}%` }}
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">목표: 192학점</p>
+                            </div>
+                            <div className="space-y-2">
+                                {Object.entries(creditStats.byCat).map(([cat, credits]) => (
+                                    <div key={cat} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className="text-sm font-medium text-gray-700">{cat}</span>
+                                        <span className="text-lg font-bold text-gray-800">{credits}학점</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                                <span className="text-sm font-medium text-gray-600">선택한 과목</span>
+                                <span className="text-lg font-bold text-blue-600">{selectedSubjects.length}개</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── 우측: 로드맵 ── */}
+                    <div className="lg:col-span-3">
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                <span className="text-2xl mr-2">🗺️</span>
+                                2-3학년 통합 로드맵
+                            </h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {semesters.map(sem => {
+                                    const grouped = getGrouped(sem);
+                                    return (
+                                        <div key={sem} className="border-2 border-gray-200 rounded-lg p-4">
+                                            <h3 className="text-lg font-bold text-gray-700 mb-4 pb-2 border-b-2 border-gray-300">
+                                                {semLabel[sem] || sem}
+                                            </h3>
+                                            {Object.entries(grouped).map(([gk, gd]) => (
+                                                <div key={gk} className="mb-4">
+                                                    <div className="flex items-center justify-between mb-2 px-2">
+                                                        <span className="text-xs font-bold text-gray-600">
+                                                            {gd.info.name} ({gd.info.desc})
+                                                        </span>
+                                                        <span className={`text-xs font-bold ${gd.currentCount >= gd.info.max ? 'text-red-600' : 'text-blue-600'}`}>
+                                                            {gd.currentCount}/{gd.info.max >= 999 ? '∞' : gd.info.max}
+                                                        </span>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {gd.subjects.map(sub => {
+                                                            const isSel  = selectedSubjects.includes(sub.name);
+                                                            const isC    = isCore(sub.name);
+                                                            const isR    = isRecommended(sub.name);
+                                                            return (
+                                                                <div
+                                                                    key={sub.name}
+                                                                    onClick={() => toggleSubject(sub.name, sem)}
+                                                                    className={[
+                                                                        'p-3 rounded-lg cursor-pointer transition-all duration-300',
+                                                                        isSel ? 'bg-blue-500 text-white shadow-lg transform scale-105' : 'bg-white hover:bg-gray-50',
+                                                                        isC && !isSel  ? 'border-4 border-amber-400 glow-gold'
+                                                                            : isR && !isSel ? 'border-4 border-purple-500 glow-purple'
+                                                                            : 'border border-gray-200'
+                                                                    ].join(' ')}
+                                                                >
+                                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                                        <span className={`text-sm font-semibold ${isSel ? 'text-white' : 'text-gray-800'}`}>
+                                                                            {sub.name}
+                                                                        </span>
+                                                                        {isC && !isSel && (
+                                                                            <span className="text-xs px-2 py-0.5 bg-amber-500 text-white rounded-full font-bold">⭐ 핵심</span>
+                                                                        )}
+                                                                        {isR && !isC && !isSel && (
+                                                                            <span className="text-xs px-2 py-0.5 bg-purple-500 text-white rounded-full font-bold">✨ 권장</span>
+                                                                        )}
+                                                                        {isSel && (
+                                                                            <span className="text-xs px-2 py-0.5 bg-white text-blue-500 rounded-full font-bold">✓ 선택</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex gap-2 mt-1">
+                                                                        <span className={`text-xs ${isSel ? 'text-blue-100' : 'text-gray-500'}`}>{sub.category}</span>
+                                                                        <span className={`text-xs font-medium ${isSel ? 'text-white' : 'text-gray-600'}`}>{sub.units}학점</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* 범례 */}
+                            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h4 className="text-sm font-bold text-gray-700 mb-3">📌 과목 표시 안내</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 bg-amber-400 rounded"></div>
+                                        <span><span className="font-bold">금색 테두리</span>: 핵심 이수과목</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 bg-purple-500 rounded"></div>
+                                        <span><span className="font-bold">보라색 테두리</span>: 권장 이수과목</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                                        <span><span className="font-bold">파란색 배경</span>: 선택한 과목</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 푸터 */}
+            <footer className="bg-gray-800 text-gray-300 py-6 mt-12">
+                <div className="container mx-auto px-6 text-center">
+                    <p className="text-sm">
+                        💡 핵심·권장과목 데이터: 2028학년도 경희대·고려대·서울대·중앙대·한양대·건국대·부산대 등 주요 대학 권장과목 발표 자료 종합
+                    </p>
+                    <p className="text-xs mt-2 text-gray-400">
+                        대학별 세부 권장과목은 변경될 수 있으니 지원 희망 대학의 입학처 홈페이지를 반드시 확인하시기 바랍니다.
+                    </p>
+                </div>
+            </footer>
+        </div>
+    );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+
+
+
+</body>
+</html>

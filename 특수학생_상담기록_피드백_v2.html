@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<!-- 특수학생 긍정적 생활지도 상담기록 및 AI 피드백 프로그램 v2 — 시각적 임팩트 강화 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>특수학생 상담기록 · AI 피드백 | PBS 기반</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #7c3aed;
+  --primary-light: #a78bfa;
+  --primary-dark: #5b21b6;
+  --teal: #0d9488;
+  --teal-dark: #065f46;
+  --amber: #d97706;
+  --rose: #e11d48;
+  --success: #059669;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --bg: #f1eefe;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+  --sidebar-w: 280px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ─── 상단 네비 ─── */
+.top-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 64px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(124,58,237,0.15);
+  display: flex; align-items: center; padding: 0 24px; gap: 14px;
+  z-index: 300;
+  box-shadow: 0 2px 20px rgba(124,58,237,0.1);
+}
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--primary); text-decoration: none;
+  font-size: 0.84rem; font-weight: 700;
+  padding: 8px 14px; border-radius: 10px;
+  background: rgba(124,58,237,0.08);
+  transition: background 0.2s; flex-shrink: 0;
+}
+.back-btn:hover { background: rgba(124,58,237,0.16); }
+.nav-title {
+  font-size: 1.05rem; font-weight: 900; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-badge {
+  font-size: 0.7rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--teal));
+  color: #fff; padding: 4px 12px; border-radius: 999px;
+}
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.api-key-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; font-weight: 700;
+  padding: 8px 16px; border-radius: 10px;
+  border: 1.5px solid rgba(124,58,237,0.3);
+  background: transparent; color: var(--primary);
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.api-key-btn:hover { background: rgba(124,58,237,0.08); }
+.api-key-btn.set { background: rgba(5,150,105,0.1); color: var(--success); border-color: rgba(5,150,105,0.3); }
+
+/* ─── 레이아웃 ─── */
+.layout { display: flex; padding-top: 64px; min-height: 100vh; }
+
+/* ─── 사이드바 ─── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: #fff;
+  border-right: 1px solid var(--border);
+  position: fixed; top: 64px; bottom: 0; left: 0;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.sidebar-head {
+  padding: 20px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-label {
+  font-size: 0.72rem; font-weight: 800; color: var(--text-muted);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px;
+}
+.add-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 0; border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; border: none; font-size: 0.9rem; font-weight: 800;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.32);
+  transition: filter 0.2s, transform 0.2s;
+}
+.add-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.student-list { flex: 1; padding: 10px; }
+.stu-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 10px; border-radius: 12px; cursor: pointer;
+  transition: background 0.2s; margin-bottom: 4px;
+}
+.stu-item:hover { background: rgba(124,58,237,0.06); }
+.stu-item.active { background: rgba(124,58,237,0.12); }
+.stu-avatar {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #ede9fe, #d1fae5);
+  color: var(--primary); font-weight: 900; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+.stu-info { flex: 1; min-width: 0; }
+.stu-name { font-size: 0.92rem; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stu-meta { font-size: 0.73rem; color: var(--text-muted); margin-top: 2px; }
+.rec-badge {
+  background: rgba(124,58,237,0.1); color: var(--primary);
+  font-size: 0.72rem; font-weight: 800;
+  padding: 4px 10px; border-radius: 999px; flex-shrink: 0;
+}
+.rec-badge.ok { background: rgba(5,150,105,0.12); color: var(--success); }
+
+/* ─── 메인 콘텐츠 ─── */
+.content { margin-left: var(--sidebar-w); flex: 1; padding: 28px 30px; max-width: calc(100vw - var(--sidebar-w)); }
+
+/* ─── 환영 화면 ─── */
+.welcome {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 65vh; text-align: center; gap: 16px;
+}
+.welcome-icon { font-size: 80px; }
+.welcome-title { font-size: 1.7rem; font-weight: 900; color: var(--text); }
+.welcome-desc { font-size: 1rem; color: var(--text-muted); line-height: 1.8; max-width: 400px; }
+
+/* ─── 학생 헤더 ─── */
+.stu-header {
+  display: flex; align-items: center; gap: 18px;
+  background: linear-gradient(135deg, #fff, #faf5ff);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 20px; padding: 20px 24px; margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.08);
+}
+.stu-header-avatar {
+  width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--teal));
+  color: #fff; font-size: 26px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.3);
+}
+.stu-header-name { font-size: 1.35rem; font-weight: 900; color: var(--text); }
+.stu-header-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+.stu-header-actions { margin-left: auto; display: flex; gap: 8px; }
+.ghost-btn {
+  padding: 8px 15px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: #fff;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; color: var(--text-muted); transition: all 0.2s;
+}
+.ghost-btn:hover { border-color: var(--primary); color: var(--primary); }
+.danger-btn { border-color: rgba(225,29,72,0.22); color: #be123c; }
+.danger-btn:hover { background: rgba(225,29,72,0.06); border-color: rgba(225,29,72,0.4); }
+
+/* ─── 스텝 탭 ─── */
+.step-tabs {
+  display: flex; gap: 8px; margin-bottom: 26px;
+}
+.step-tab {
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 24px; border-radius: 14px;
+  font-size: 0.95rem; font-weight: 800;
+  cursor: pointer; transition: all 0.2s;
+  color: var(--text-muted); border: 2px solid transparent;
+  background: #fff; font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.step-tab.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+}
+.step-tab:not(.active):hover {
+  border-color: var(--primary-light);
+  color: var(--primary);
+  background: rgba(124,58,237,0.04);
+}
+.step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(124,58,237,0.14); color: var(--primary);
+  font-size: 0.78rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-tab.active .step-num { background: rgba(255,255,255,0.25); color: #fff; }
+
+/* ─── 섹션 카드 ─── */
+.sec-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.sec-head {
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sec-head.purple { background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(124,58,237,0.03)); border-bottom-color: rgba(124,58,237,0.15); }
+.sec-head.teal   { background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(13,148,136,0.03)); border-bottom-color: rgba(13,148,136,0.15); }
+.sec-head.amber  { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.03)); border-bottom-color: rgba(245,158,11,0.15); }
+.sec-head.rose   { background: linear-gradient(135deg, rgba(225,29,72,0.07), rgba(225,29,72,0.02)); border-bottom-color: rgba(225,29,72,0.15); }
+.sec-head.blue   { background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.03)); border-bottom-color: rgba(59,130,246,0.15); }
+.sec-icon {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.sec-icon.purple { background: rgba(124,58,237,0.12); }
+.sec-icon.teal   { background: rgba(13,148,136,0.12); }
+.sec-icon.amber  { background: rgba(245,158,11,0.12); }
+.sec-icon.rose   { background: rgba(225,29,72,0.1); }
+.sec-icon.blue   { background: rgba(59,130,246,0.1); }
+.sec-title { font-size: 1.05rem; font-weight: 900; color: var(--text); }
+.sec-sub { font-size: 0.77rem; color: var(--text-muted); margin-top: 2px; }
+.sec-body { padding: 22px 24px; }
+
+/* ─── 날짜/강도 섹션 ─── */
+.date-sev-row { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.date-wrap { flex: 1; min-width: 200px; }
+.field-label {
+  font-size: 0.82rem; font-weight: 800; color: var(--text-muted);
+  margin-bottom: 8px; display: block;
+}
+input[type="date"], input[type="text"], select, textarea {
+  width: 100%; padding: 12px 16px;
+  border: 2px solid var(--border); border-radius: 12px;
+  font-size: 0.95rem; font-family: inherit; color: var(--text);
+  background: #fafafa; transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(124,58,237,0.1); background: #fff;
+}
+textarea { resize: vertical; min-height: 88px; line-height: 1.65; }
+
+/* ─── 강도 선택기 ─── */
+.sev-wrap { flex: 2; min-width: 260px; }
+.sev-row { display: flex; gap: 10px; }
+.sev-btn {
+  flex: 1; padding: 14px 8px; border: 2.5px solid var(--border);
+  border-radius: 14px; background: #fafafa; cursor: pointer;
+  font-family: inherit; text-align: center; transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.sev-btn .sev-emoji { font-size: 26px; }
+.sev-btn .sev-label { font-size: 0.82rem; font-weight: 800; color: var(--text-muted); }
+.sev-btn.s1 { border-color: #4ade80; background: #f0fdf4; }
+.sev-btn.s1 .sev-label { color: #16a34a; }
+.sev-btn.s2 { border-color: #fbbf24; background: #fffbeb; }
+.sev-btn.s2 .sev-label { color: #d97706; }
+.sev-btn.s3 { border-color: #f87171; background: #fef2f2; }
+.sev-btn.s3 .sev-label { color: #dc2626; }
+
+/* ─── 타일 그리드 ─── */
+.tile-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 12px 14px;
+}
+.tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 13px 8px 11px;
+  width: 86px; flex-shrink: 0;
+  border: 2px solid var(--border); border-radius: 14px;
+  cursor: pointer; text-align: center; background: #fafafa;
+  transition: all 0.18s; user-select: none; min-height: 74px;
+  position: relative;
+}
+.tile-icon { font-size: 1.5rem; line-height: 1; }
+.tile-label { font-size: 0.71rem; font-weight: 800; color: var(--text-muted); line-height: 1.35; word-break: keep-all; }
+.tile:hover { border-color: var(--primary-light); background: rgba(124,58,237,0.04); }
+.tile.on { border-color: var(--primary); background: rgba(124,58,237,0.09); box-shadow: 0 0 0 1px rgba(124,58,237,0.25); }
+.tile.on .tile-label { color: var(--primary); }
+.tile.on::after { content: '✓'; position: absolute; top: 5px; right: 7px; font-size: 0.65rem; font-weight: 900; color: var(--primary); }
+
+.tile.teal:hover { border-color: var(--teal); background: rgba(13,148,136,0.04); }
+.tile.teal.on { border-color: var(--teal); background: rgba(13,148,136,0.09); box-shadow: 0 0 0 1px rgba(13,148,136,0.25); }
+.tile.teal.on .tile-label { color: var(--teal); }
+.tile.teal.on::after { color: var(--teal); }
+
+.tile.amber:hover { border-color: #d97706; background: rgba(245,158,11,0.04); }
+.tile.amber.on { border-color: #d97706; background: rgba(245,158,11,0.09); box-shadow: 0 0 0 1px rgba(245,158,11,0.3); }
+.tile.amber.on .tile-label { color: #92400e; }
+.tile.amber.on::after { color: #d97706; }
+
+.tile.rose:hover { border-color: #f43f5e; background: rgba(225,29,72,0.04); }
+.tile.rose.on { border-color: #f43f5e; background: rgba(225,29,72,0.09); box-shadow: 0 0 0 1px rgba(225,29,72,0.25); }
+.tile.rose.on .tile-label { color: #be123c; }
+.tile.rose.on::after { color: #f43f5e; }
+
+/* ─── 칩 (인라인 호환용, 모달 등) ─── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 16px; border: 2px solid var(--border);
+  border-radius: 10px; cursor: pointer;
+  font-size: 0.87rem; font-weight: 700;
+  color: var(--text-muted); background: #fafafa;
+  transition: all 0.18s; user-select: none; line-height: 1.3;
+}
+.chip.on { border-color: var(--primary); background: rgba(124,58,237,0.08); color: var(--primary); }
+.chip:hover { border-color: var(--primary-light); color: var(--primary); }
+
+/* ─── 선행사건 카테고리 ─── */
+.ante-section { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+.ante-cat {
+  border: 2px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+.ante-cat-label {
+  font-size: 0.85rem; font-weight: 800; color: var(--text);
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #fffbeb, #fefce8);
+  display: flex; align-items: center; gap: 6px;
+  border-bottom: 1.5px solid rgba(245,158,11,0.2);
+}
+.ante-cat .chip-group { padding: 14px 14px; }
+.ante-cat .tile-grid { padding: 12px; }
+
+/* ─── 저장 버튼 ─── */
+.save-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; border: none; border-radius: 14px;
+  padding: 14px 32px; font-size: 1rem; font-weight: 800;
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(124,58,237,0.38); margin-top: 4px;
+}
+.save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(124,58,237,0.48); filter: brightness(1.05); }
+.teal-save {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  box-shadow: 0 4px 18px rgba(13,148,136,0.38);
+}
+.teal-save:hover { box-shadow: 0 8px 26px rgba(13,148,136,0.48); }
+
+/* ─── 미효과 전략 입력 ─── */
+.failed-wrap {
+  background: rgba(225,29,72,0.04);
+  border: 2px solid rgba(225,29,72,0.22);
+  border-radius: 14px; padding: 18px 20px;
+}
+.failed-wrap .field-label { color: #be123c; }
+.failed-wrap textarea { border-color: rgba(225,29,72,0.25); background: #fff; }
+.failed-wrap textarea:focus { border-color: rgba(225,29,72,0.5); box-shadow: 0 0 0 4px rgba(225,29,72,0.08); }
+
+/* ─── 기록 카드 목록 ─── */
+.rec-list { display: flex; flex-direction: column; gap: 16px; }
+.rec-card {
+  background: #fff; border-radius: 18px;
+  border: 1px solid var(--border);
+  overflow: hidden; position: relative;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s;
+}
+.rec-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.09); }
+.rec-card-top {
+  padding: 16px 20px 14px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.rec-card-top.sev1 { background: linear-gradient(135deg, #f0fdf4, #fff); border-left: 5px solid #4ade80; }
+.rec-card-top.sev2 { background: linear-gradient(135deg, #fffbeb, #fff); border-left: 5px solid #fbbf24; }
+.rec-card-top.sev3 { background: linear-gradient(135deg, #fef2f2, #fff); border-left: 5px solid #f87171; }
+.rec-date-badge {
+  font-size: 0.88rem; font-weight: 900; color: var(--primary);
+  background: rgba(124,58,237,0.1); padding: 6px 14px; border-radius: 8px;
+  flex-shrink: 0;
+}
+.rec-sev-badge {
+  font-size: 0.8rem; font-weight: 800; padding: 5px 12px;
+  border-radius: 8px; flex-shrink: 0;
+}
+.rec-sev-badge.s1 { background: rgba(74,222,128,0.15); color: #16a34a; }
+.rec-sev-badge.s2 { background: rgba(251,191,36,0.18); color: #d97706; }
+.rec-sev-badge.s3 { background: rgba(248,113,113,0.18); color: #dc2626; }
+.beh-tags { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+.beh-tag {
+  font-size: 0.78rem; font-weight: 700; padding: 5px 10px;
+  border-radius: 7px; background: rgba(225,29,72,0.08);
+  color: #be123c; border: 1px solid rgba(225,29,72,0.2);
+}
+.str-tag {
+  background: rgba(13,148,136,0.08); color: #0f766e;
+  border-color: rgba(13,148,136,0.2);
+}
+.ante-tag {
+  background: rgba(245,158,11,0.08); color: #92400e;
+  border: 1px solid rgba(245,158,11,0.25);
+  font-size: 0.78rem; font-weight: 700; padding: 5px 10px;
+  border-radius: 7px;
+}
+.rec-del {
+  position: absolute; top: 14px; right: 14px;
+  background: none; border: none; color: #cbd5e1; cursor: pointer;
+  font-size: 16px; padding: 5px 7px; border-radius: 7px; transition: all 0.2s;
+}
+.rec-del:hover { color: var(--rose); background: rgba(225,29,72,0.09); }
+.rec-card-body { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+.rec-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.rec-field { flex: 1; min-width: 200px; }
+.d-label {
+  font-size: 0.75rem; font-weight: 800; color: var(--text-muted);
+  margin-bottom: 4px; letter-spacing: 0.03em;
+}
+.d-val { font-size: 0.88rem; color: var(--text); line-height: 1.6; }
+
+/* ─── AI 탭 ─── */
+.ai-notice {
+  background: linear-gradient(135deg, rgba(124,58,237,0.06), rgba(13,148,136,0.05));
+  border: 1.5px solid rgba(124,58,237,0.22); border-radius: 18px;
+  padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 16px;
+  align-items: flex-start;
+}
+.ai-notice-icon { font-size: 32px; flex-shrink: 0; }
+.ai-notice-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+.ai-notice-text strong { color: var(--primary); }
+
+/* ─── 통계 카드 ─── */
+.summary-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.sum-card {
+  background: #fff; border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 18px 22px; text-align: center;
+  min-width: 110px; flex: 1;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.sum-num {
+  font-size: 1.9rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--primary), var(--teal));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.sum-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; font-weight: 700; }
+.failed-sum-card .sum-num {
+  background: linear-gradient(135deg, #be123c, #dc2626);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* ─── 사이클 박스 ─── */
+.cycle-box {
+  background: linear-gradient(135deg, #fffbeb, #faf5ff);
+  border: 2px solid rgba(245,158,11,0.32); border-radius: 18px;
+  padding: 20px 22px; margin-bottom: 24px;
+}
+.cycle-title {
+  font-size: 0.95rem; font-weight: 900; color: #92400e;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.cycle-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.c-step {
+  background: #fff; border-radius: 11px; padding: 10px 16px;
+  font-size: 0.82rem; font-weight: 800; color: var(--text);
+  border: 2px solid rgba(0,0,0,0.1); line-height: 1.4; text-align: center;
+}
+.c-step.ok { border-color: rgba(5,150,105,0.4); color: var(--success); background: rgba(5,150,105,0.06); }
+.c-step.fail { border-color: rgba(225,29,72,0.35); color: #be123c; background: rgba(225,29,72,0.06); }
+.c-step.next { border-color: rgba(124,58,237,0.38); color: var(--primary); background: rgba(124,58,237,0.06); }
+.c-arr { font-size: 1.1rem; color: #d1d5db; font-weight: 900; }
+.cycle-note {
+  font-size: 0.82rem; color: #92400e; line-height: 1.75;
+  padding-top: 12px; border-top: 1px solid rgba(245,158,11,0.22); opacity: 0.9;
+}
+
+/* ─── 생성 버튼 ─── */
+.gen-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--teal));
+  color: #fff; border: none; border-radius: 14px;
+  padding: 15px 30px; font-size: 1.02rem; font-weight: 800;
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.32); margin-bottom: 22px;
+}
+.gen-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.45); }
+.gen-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+
+.need-more {
+  background: rgba(245,158,11,0.09); border: 2px solid rgba(245,158,11,0.3);
+  border-radius: 14px; padding: 18px 22px; font-size: 0.92rem;
+  color: var(--amber); font-weight: 700; display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* ─── AI 피드백 박스 ─── */
+.fb-box {
+  background: linear-gradient(135deg, #faf5ff, #f0fdfa);
+  border: 1.5px solid rgba(124,58,237,0.22); border-radius: 18px; padding: 28px;
+}
+.fb-head {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; padding-bottom: 18px;
+  border-bottom: 1px solid rgba(124,58,237,0.15);
+}
+.fb-title { font-size: 1.08rem; font-weight: 900; color: var(--primary); }
+.fb-time { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); }
+.fb-text { font-size: 0.92rem; color: var(--text); line-height: 1.9; white-space: pre-wrap; }
+
+/* ─── AI 피드백 활용 안내 ─── */
+.fb-action {
+  margin-top: 24px;
+  background: rgba(245,158,11,0.07); border: 2px solid rgba(245,158,11,0.3);
+  border-radius: 16px; padding: 18px 22px;
+}
+.fb-action-title {
+  font-size: 0.9rem; font-weight: 900; color: #92400e;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 7px;
+}
+.fb-action-list { display: flex; flex-direction: column; gap: 10px; }
+.fb-action-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 0.86rem; color: var(--text); line-height: 1.65;
+}
+.fb-action-num {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 900;
+}
+.fb-action-num.a1 { background: rgba(5,150,105,0.15); color: var(--success); }
+.fb-action-num.a2 { background: rgba(245,158,11,0.15); color: #d97706; }
+.fb-action-num.a3 { background: rgba(225,29,72,0.12); color: #be123c; }
+.fb-action-num.a4 { background: rgba(124,58,237,0.12); color: var(--primary); }
+
+/* ─── NEIS 문구 박스 ─── */
+.neis-box {
+  background: linear-gradient(135deg, #f8f0ff, #eef9ff);
+  border: 2px solid rgba(124,58,237,0.22);
+  border-radius: 14px; padding: 16px 18px; margin-top: 4px;
+}
+.neis-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; gap: 8px;
+}
+.neis-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; font-weight: 900; color: var(--primary);
+}
+.neis-badge {
+  font-size: 0.68rem; font-weight: 800;
+  background: rgba(124,58,237,0.14); color: var(--primary);
+  padding: 3px 9px; border-radius: 6px;
+}
+.neis-copy-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 15px; border-radius: 9px;
+  border: 2px solid rgba(124,58,237,0.3);
+  background: #fff; font-size: 0.8rem; font-weight: 800;
+  color: var(--primary); cursor: pointer; font-family: inherit;
+  transition: all 0.18s; white-space: nowrap;
+}
+.neis-copy-btn:hover { background: rgba(124,58,237,0.1); border-color: var(--primary); }
+.neis-copy-btn.copied { background: rgba(5,150,105,0.1); color: var(--success); border-color: rgba(5,150,105,0.4); }
+.neis-text {
+  font-size: 0.9rem; color: var(--text); line-height: 1.9;
+  word-break: keep-all; letter-spacing: -0.01em;
+  background: rgba(255,255,255,0.75); border-radius: 10px;
+  padding: 13px 15px; border: 1px solid rgba(124,58,237,0.12);
+  cursor: text; user-select: text;
+}
+
+/* ─── 로딩 ─── */
+.spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 52px; }
+.spinner {
+  width: 52px; height: 52px;
+  border: 4px solid rgba(124,58,237,0.15);
+  border-top-color: var(--primary); border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── 모달 ─── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px); z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.22s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: #fff; border-radius: 24px; padding: 34px;
+  width: 92%; max-width: 500px;
+  transform: scale(0.92); transition: transform 0.22s;
+  box-shadow: 0 28px 72px rgba(0,0,0,0.22);
+}
+.overlay.open .modal { transform: scale(1); }
+.modal-head { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.modal-title { font-size: 1.12rem; font-weight: 900; }
+.modal-x {
+  margin-left: auto; background: none; border: none; font-size: 22px;
+  cursor: pointer; color: var(--text-muted); padding: 5px 9px; border-radius: 8px;
+  transition: background 0.2s;
+}
+.modal-x:hover { background: rgba(0,0,0,0.06); }
+.modal-footer { margin-top: 22px; display: flex; gap: 9px; justify-content: flex-end; }
+.cancel-btn {
+  padding: 12px 24px; border-radius: 12px; border: 2px solid var(--border);
+  background: #fff; font-size: 0.92rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; color: var(--text-muted);
+  transition: all 0.18s;
+}
+.cancel-btn:hover { border-color: var(--text-muted); }
+.del-c-btn {
+  padding: 12px 24px; border-radius: 12px;
+  border: 2px solid rgba(225,29,72,0.25); background: #fff;
+  font-size: 0.92rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; color: #be123c; transition: all 0.18s;
+}
+.del-c-btn:hover { background: rgba(225,29,72,0.08); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fg { display: flex; flex-direction: column; gap: 6px; }
+.fg.full { grid-column: 1 / -1; }
+
+/* ─── 토스트 ─── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(90px);
+  background: #1e293b; color: #fff; padding: 14px 28px;
+  border-radius: 14px; font-size: 0.9rem; font-weight: 700;
+  z-index: 9999; transition: transform 0.28s, opacity 0.28s;
+  opacity: 0; pointer-events: none; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.ok { background: linear-gradient(135deg, #059669, #047857); }
+.toast.err { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+
+/* ─── 빈 상태 ─── */
+.empty { text-align: center; padding: 42px 20px; color: var(--text-muted); }
+.empty-icon { font-size: 44px; margin-bottom: 12px; }
+.empty-txt { font-size: 0.92rem; line-height: 1.75; }
+
+/* ─── 정보 표시 카드 ─── */
+.info-val-box {
+  font-size: 0.92rem; color: var(--text);
+  padding: 11px 15px; background: #f8f8fc;
+  border-radius: 12px; border: 2px solid var(--border);
+  line-height: 1.6;
+}
+.dis-chip {
+  background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(13,148,136,0.08));
+  color: var(--primary); border: 1px solid rgba(124,58,237,0.25);
+  border-radius: 10px; padding: 8px 16px;
+  font-size: 0.88rem; font-weight: 700;
+}
+
+/* ─── 반응형 ─── */
+@media (max-width: 820px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar { display: none; }
+  .content { margin-left: 0; max-width: 100vw; padding: 14px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .step-tabs { flex-wrap: wrap; }
+  .step-tab { font-size: 0.85rem; padding: 10px 16px; }
+  .nav-badge { display: none; }
+  .date-sev-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- 상단 네비게이션 -->
+<nav class="top-nav">
+  <a href="index.html" class="back-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    메인으로
+  </a>
+  <div class="nav-title">
+    🧩 특수학생 상담기록 · AI 피드백
+    <span class="nav-badge">PBS 긍정적 행동지원</span>
+  </div>
+  <div class="nav-right">
+    <button class="api-key-btn" id="apiKeyBtn" onclick="openApiModal()">🔑 API 키 설정</button>
+  </div>
+</nav>
+
+<!-- 사이드바 -->
+<div class="sidebar">
+  <div class="sidebar-head">
+    <div class="sidebar-label">등록된 학생</div>
+    <button class="add-btn" onclick="openAddModal()">＋ 학생 추가</button>
+  </div>
+  <div class="student-list" id="stuList">
+    <div class="empty" style="padding:22px 10px;">
+      <div class="empty-icon">👤</div>
+      <div class="empty-txt" style="font-size:0.82rem;">학생을 추가하면<br>여기에 표시됩니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 메인 레이아웃 -->
+<div class="layout">
+  <div class="content" id="mainContent">
+
+    <!-- 환영 화면 -->
+    <div class="welcome" id="welcomeView">
+      <div class="welcome-icon">🧩</div>
+      <div class="welcome-title">특수학생 상담기록 · AI 피드백</div>
+      <div class="welcome-desc">
+        왼쪽에서 학생을 선택하거나<br>새 학생을 추가하여 상담 기록을 시작하세요.<br><br>
+        <strong style="color:var(--primary)">기록이 3개 이상</strong> 쌓이면<br>
+        AI 긍정적 행동지원(PBS) 피드백을 받을 수 있습니다.
+      </div>
+    </div>
+
+    <!-- 학생 상세 뷰 -->
+    <div id="detailView" style="display:none;">
+
+      <!-- 학생 헤더 -->
+      <div class="stu-header">
+        <div class="stu-header-avatar">🧑</div>
+        <div>
+          <div class="stu-header-name" id="hdrName"></div>
+          <div class="stu-header-meta" id="hdrMeta"></div>
+        </div>
+        <div class="stu-header-actions">
+          <button class="ghost-btn" onclick="openEditModal()">✏️ 수정</button>
+          <button class="ghost-btn danger-btn" onclick="deleteCurrentStu()">🗑️ 삭제</button>
+        </div>
+      </div>
+
+      <!-- 스텝 탭 -->
+      <div class="step-tabs">
+        <button class="step-tab active" id="tab1" onclick="switchTab(1)"><span class="step-num">1</span>학생 정보</button>
+        <button class="step-tab" id="tab2" onclick="switchTab(2)"><span class="step-num">2</span>상담 기록</button>
+        <button class="step-tab" id="tab3" onclick="switchTab(3)"><span class="step-num">3</span>AI 피드백</button>
+      </div>
+
+      <!-- 탭 1: 학생 정보 -->
+      <div id="tc1">
+        <div class="sec-card">
+          <div class="sec-head purple">
+            <div class="sec-icon purple">📋</div>
+            <div>
+              <div class="sec-title">학생 기본 정보</div>
+            </div>
+          </div>
+          <div class="sec-body">
+            <div class="form-grid" id="infoDisplay"></div>
+          </div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-head teal">
+            <div class="sec-icon teal">🏷️</div>
+            <div>
+              <div class="sec-title">장애 특성</div>
+            </div>
+          </div>
+          <div class="sec-body" id="disDisplay"></div>
+        </div>
+      </div>
+
+      <!-- 탭 2: 상담 기록 -->
+      <div id="tc2" style="display:none;">
+
+        <!-- ① 날짜 & 강도 -->
+        <div class="sec-card">
+          <div class="sec-head purple">
+            <div class="sec-icon purple">📅</div>
+            <div>
+              <div class="sec-title">① 날짜 & 행동 강도</div>
+              <div class="sec-sub">발생 날짜와 행동의 심각도를 선택하세요</div>
+            </div>
+          </div>
+          <div class="sec-body">
+            <div class="date-sev-row">
+              <div class="date-wrap">
+                <label class="field-label">📅 발생 날짜 *</label>
+                <input type="date" id="rDate">
+              </div>
+              <div class="sev-wrap">
+                <label class="field-label">⚡ 행동 강도</label>
+                <div class="sev-row">
+                  <button class="sev-btn" id="sv1" onclick="setSev(1)">
+                    <span class="sev-emoji">🟢</span>
+                    <span class="sev-label">약함</span>
+                  </button>
+                  <button class="sev-btn" id="sv2" onclick="setSev(2)">
+                    <span class="sev-emoji">🟡</span>
+                    <span class="sev-label">중간</span>
+                  </button>
+                  <button class="sev-btn" id="sv3" onclick="setSev(3)">
+                    <span class="sev-emoji">🔴</span>
+                    <span class="sev-label">강함</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ② 문제 행동 -->
+        <div class="sec-card">
+          <div class="sec-head rose">
+            <div class="sec-icon rose">🚨</div>
+            <div>
+              <div class="sec-title">② 문제 행동 종류 *</div>
+              <div class="sec-sub">해당하는 행동을 모두 선택하세요 (복수 선택 가능)</div>
+            </div>
+          </div>
+          <div class="sec-body" style="padding:0;">
+            <div class="ante-section" id="behChips" style="margin-bottom:0;"></div>
+          </div>
+        </div>
+
+        <!-- ③ 발생 상황 -->
+        <div class="sec-card">
+          <div class="sec-head amber">
+            <div class="sec-icon amber">📍</div>
+            <div>
+              <div class="sec-title">③ 발생 상황 · 선행사건</div>
+              <div class="sec-sub">행동이 일어나기 전 상황과 중재 내용을 기록하세요</div>
+            </div>
+          </div>
+          <div class="sec-body">
+            <div style="margin-bottom:16px;">
+              <label class="field-label">📝 발생 상황 상세 기술</label>
+              <textarea id="rAnte" placeholder="행동 발생 전 상황, 자극, 환경 등을 기록하세요. (예: 수업 전환, 과제 제시, 또래 접촉, 감각 자극 등)"></textarea>
+            </div>
+            <div>
+              <label class="field-label" style="margin-bottom:12px; display:block;">🔧 선행사건 중재 내용 — 나이스 문구에 구체적으로 반영됩니다</label>
+              <div class="ante-section" id="anteSection"></div>
+              <input type="text" id="anteIntMemo" placeholder="✏️ 직접 입력 (예: 학생이 싫어하는 종을 치우고 시각 신호로 대체함, 좌석을 교실 앞쪽으로 변경함)" style="margin-top:4px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- ④ 지도 방법 & 전략 -->
+        <div class="sec-card">
+          <div class="sec-head teal">
+            <div class="sec-icon teal">✅</div>
+            <div>
+              <div class="sec-title">④ 지도 방법 & 긍정적 전략</div>
+              <div class="sec-sub">교사의 대응 방법과 사용한 전략을 선택하세요</div>
+            </div>
+          </div>
+          <div class="sec-body">
+            <div style="margin-bottom:18px;">
+              <label class="field-label">📝 지도 내용 · 교사 대응</label>
+              <textarea id="rGuide" placeholder="교사가 취한 지도 방법과 학생의 반응을 기록하세요."></textarea>
+            </div>
+            <div>
+              <label class="field-label" style="margin-bottom:10px; display:block;">✅ 사용한 긍정적 지도 전략 (복수 선택)</label>
+              <div class="ante-section" id="strChips"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⑤ 결과 & 미효과 -->
+        <div class="sec-card">
+          <div class="sec-head blue">
+            <div class="sec-icon blue">📊</div>
+            <div>
+              <div class="sec-title">⑤ 결과 & 미효과 전략</div>
+              <div class="sec-sub">지도 결과와 효과 없었던 전략을 기록하세요</div>
+            </div>
+          </div>
+          <div class="sec-body">
+            <div style="margin-bottom:18px;">
+              <label class="field-label">📊 결과 · 특이사항</label>
+              <textarea id="rResult" placeholder="지도 후 학생 반응, 행동 변화, 특이사항을 기록하세요."></textarea>
+            </div>
+            <div class="failed-wrap">
+              <label class="field-label">❌ AI 추천 전략 중 효과 없었던 내용
+                <span style="font-size:0.75rem; font-weight:400; color:#be123c; opacity:0.85;"> — 다음 AI 재분석 시 해당 전략 제외하고 대안 제시</span>
+              </label>
+              <textarea id="rFailedStr" style="min-height:78px;"
+                placeholder="예) AI에서 추천한 토큰 경제를 2주 시도하였으나 학생이 토큰에 관심 없어 효과 없었음&#10;예) 타임아웃 적용 시 오히려 공격 행동이 심화되어 중단함&#10;※ AI 추천을 아직 받지 않았거나 효과 없는 전략이 없으면 비워두세요."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:0 2px 4px;">
+          <button class="save-btn teal-save" onclick="saveRecord()">
+            💾 기록 저장
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          </button>
+        </div>
+
+        <!-- 기록 목록 -->
+        <div class="sec-card" style="margin-top:24px;">
+          <div class="sec-head purple">
+            <div class="sec-icon purple">📚</div>
+            <div>
+              <div class="sec-title">
+                상담 기록 목록
+                <span id="recCntBadge" style="font-size:0.78rem;font-weight:800;background:rgba(124,58,237,0.12);color:var(--primary);padding:4px 12px;border-radius:999px;margin-left:8px;"></span>
+              </div>
+            </div>
+          </div>
+          <div class="sec-body" style="padding-top:16px;">
+            <div id="recListWrap">
+              <div class="empty"><div class="empty-icon">📄</div><div class="empty-txt">아직 기록이 없습니다.<br>위 양식을 작성하고 저장해 주세요.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 3: AI 피드백 -->
+      <div id="tc3" style="display:none;">
+        <div class="ai-notice">
+          <div class="ai-notice-icon">🤖</div>
+          <div class="ai-notice-text">
+            <strong>PBS 기반 AI 행동지원 피드백</strong>이란?<br>
+            쌓인 상담 기록을 분석해 <strong>긍정적 행동지원(Positive Behavioral Support)</strong> 원칙에 따라
+            행동 기능을 파악하고 교사에게 맞춤형 지도 방안을 제시합니다.
+            학생 이름·학번 등 개인정보는 AI에 전송되지 않습니다.
+          </div>
+        </div>
+        <div id="aiWrap"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 학생 추가/수정 모달 -->
+<div class="overlay" id="stuModal" onclick="closeStuModalOut(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="font-size:24px;">👤</span>
+      <div class="modal-title" id="stuModalTitle">새 학생 추가</div>
+      <button class="modal-x" onclick="closeStuModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="field-label" style="font-size:0.82rem;">학생 이름 *</label>
+        <input type="text" id="mName" placeholder="홍길동">
+      </div>
+      <div class="fg">
+        <label class="field-label" style="font-size:0.82rem;">학년 · 반</label>
+        <input type="text" id="mGrade" placeholder="예: 고1-2">
+      </div>
+    </div>
+    <div class="fg full" style="margin-top:16px;">
+      <label class="field-label" style="font-size:0.82rem;">장애 유형 (복수 선택)</label>
+      <div class="tile-grid" id="disChips" style="padding:0;margin-top:6px;gap:7px;"></div>
+    </div>
+    <div class="fg" style="margin-top:16px;">
+      <label class="field-label" style="font-size:0.82rem;">장애 정도</label>
+      <select id="mSev">
+        <option value="">선택</option>
+        <option value="경도">경도 (mild)</option>
+        <option value="중등도">중등도 (moderate)</option>
+        <option value="중도">중도 (severe)</option>
+        <option value="최중도">최중도 (profound)</option>
+      </select>
+    </div>
+    <div class="fg" style="margin-top:16px;">
+      <label class="field-label" style="font-size:0.82rem;">주요 특성 · 강점 · 관심사 메모</label>
+      <textarea id="mMemo" placeholder="학생의 주요 특성, 강점, 관심사, 의사소통 방법, 선호 강화제 등을 기록하세요." style="min-height:76px;"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="closeStuModal()">취소</button>
+      <button class="save-btn" style="margin-top:0;" onclick="saveStuModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- API 키 모달 -->
+<div class="overlay" id="apiModal" onclick="closeApiModalOut(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="font-size:24px;">🔑</span>
+      <div class="modal-title">Claude API 키 설정</div>
+      <button class="modal-x" onclick="closeApiModal()">✕</button>
+    </div>
+    <div style="background:rgba(124,58,237,0.06);border:1.5px solid rgba(124,58,237,0.2);border-radius:14px;padding:14px 18px;font-size:0.85rem;color:var(--text-muted);line-height:1.7;margin-bottom:18px;">
+      🔒 API 키는 이 기기의 <strong>localStorage에만 저장</strong>되며 외부 서버로 전송되지 않습니다.<br>
+      Google AI Studio <strong>(aistudio.google.com)</strong>에서 무료로 발급받으세요.
+    </div>
+    <div class="fg">
+      <label class="field-label" style="font-size:0.82rem;">Gemini API 키 (AIza...)</label>
+      <input type="text" id="apiIn" placeholder="AIzaSy..." style="font-family:monospace;font-size:0.83rem;">
+    </div>
+    <div class="modal-footer">
+      <button class="del-c-btn" onclick="clearApiKey()">🗑 삭제</button>
+      <button class="cancel-btn" onclick="closeApiModal()">취소</button>
+      <button class="save-btn" style="margin-top:0;" onclick="saveApiKey()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<!-- 제작자 서명 워터마크 -->
+<div style="position:fixed;top:18px;right:18px;z-index:500;opacity:0.10;transition:opacity .4s;pointer-events:none;"
+     onmouseenter="this.style.opacity='0.28'" onmouseleave="this.style.opacity='0.10'">
+  <svg width="82" height="82" viewBox="0 0 82 82" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="41" cy="41" r="38" stroke="#7c3aed" stroke-width="2.2"/>
+    <circle cx="41" cy="41" r="30" stroke="#7c3aed" stroke-width="0.9" stroke-dasharray="3 3"/>
+    <ellipse cx="41" cy="36" rx="10" ry="12" stroke="#7c3aed" stroke-width="1.4" fill="none"/>
+    <circle cx="37" cy="34" r="3" stroke="#7c3aed" stroke-width="1.1" fill="none"/>
+    <circle cx="45" cy="34" r="3" stroke="#7c3aed" stroke-width="1.1" fill="none"/>
+    <line x1="40" y1="34" x2="42" y2="34" stroke="#7c3aed" stroke-width="1.1"/>
+    <line x1="34" y1="34" x2="32" y2="34" stroke="#7c3aed" stroke-width="1.1"/>
+    <line x1="48" y1="34" x2="50" y2="34" stroke="#7c3aed" stroke-width="1.1"/>
+    <path d="M37 40 Q41 43 45 40" stroke="#7c3aed" stroke-width="1.1" fill="none"/>
+    <defs><path id="arc1" d="M 11,43 A 30,30 0 0,1 71,43"/></defs>
+    <text font-size="5.3" fill="#7c3aed" font-family="'Noto Sans KR',sans-serif" font-weight="700">
+      <textPath href="#arc1" startOffset="8%">경기도 역사교사 · 이재영 선생님</textPath>
+    </text>
+    <text x="41" y="73" text-anchor="middle" font-size="4.4" fill="#7c3aed" font-family="'Noto Sans KR',sans-serif" font-weight="600">Made by Teacher Lee</text>
+  </svg>
+</div>
+
+<script>
+// ── 데이터 상수 ──
+const BEHAVIORS = [
+  {
+    group: '🔴 신체·공격', labelStyle: 'background:linear-gradient(135deg,#fef2f2,#fff5f5);border-bottom-color:rgba(225,29,72,0.22);',
+    items: [
+      { val: '공격행동 (때리기·물기·할퀴기)', icon: '👊', label: '공격행동' },
+      { val: '자해행동 (자기 신체 손상)',      icon: '🤕', label: '자해행동' },
+      { val: '기물파손',                      icon: '💥', label: '기물파손' },
+    ]
+  },
+  {
+    group: '📢 소리·감정', labelStyle: 'background:linear-gradient(135deg,#fff7ed,#fffbf0);border-bottom-color:rgba(234,88,12,0.22);',
+    items: [
+      { val: '떼쓰기·울음·소리지르기', icon: '😭', label: '떼쓰기·울음' },
+      { val: '부적절한 발성',          icon: '🔊', label: '부적절 발성' },
+    ]
+  },
+  {
+    group: '🚪 이탈·거부', labelStyle: 'background:linear-gradient(135deg,#fffbeb,#fefce8);border-bottom-color:rgba(245,158,11,0.22);',
+    items: [
+      { val: '도주·이탈행동',  icon: '🏃', label: '도주·이탈' },
+      { val: '지시 거부·반항', icon: '🙅', label: '거부·반항' },
+    ]
+  },
+  {
+    group: '🔵 자기조절·관계', labelStyle: 'background:linear-gradient(135deg,#eff6ff,#f0f9ff);border-bottom-color:rgba(59,130,246,0.22);',
+    items: [
+      { val: '자기자극 행동 (손 흔들기 등)', icon: '🌀', label: '자기자극' },
+      { val: '부적절한 신체접촉',           icon: '✋', label: '부적절 접촉' },
+      { val: '수업 방해 행동',              icon: '📚', label: '수업 방해' },
+      { val: '충동·과잉행동',               icon: '⚡', label: '충동·과잉' },
+    ]
+  },
+];
+
+const STRATEGIES = [
+  { group: '🌍 환경·자극 조정', items: [
+    { val: '선행사건 수정 (환경 조정)',         icon: '🔧', label: '환경 조정' },
+    { val: '감각 통합 활동',                    icon: '🫀', label: '감각 통합' },
+    { val: '쉬는 시간 제공 (탈출 요구 충족)',   icon: '☕', label: '휴식 제공' },
+  ]},
+  { group: '👁️ 시각·구조화', items: [
+    { val: '시각적 지원 (그림·카드·일과표)',     icon: '🖼️', label: '시각적 지원' },
+    { val: '경고 신호 사전 안내',               icon: '⏰', label: '사전 안내' },
+    { val: '사회 이야기 (Social Story)',         icon: '📖', label: '사회 이야기' },
+    { val: '자기점검표 사용',                   icon: '📋', label: '자기점검' },
+  ]},
+  { group: '💬 의사소통·교수', items: [
+    { val: '기능적 의사소통 훈련 (FCT)',         icon: '🗣️', label: 'FCT 훈련' },
+    { val: '대체행동 교수',                     icon: '🔄', label: '대체행동' },
+    { val: '선택권 제공',                       icon: '🎯', label: '선택권' },
+  ]},
+  { group: '🌟 강화 전략', items: [
+    { val: '긍정적 강화 (칭찬·보상)',            icon: '⭐', label: '긍정 강화' },
+    { val: '차별강화 (DRO/DRI/DRA)',            icon: '🎖️', label: '차별강화' },
+    { val: '토큰 경제 시스템',                  icon: '🪙', label: '토큰 경제' },
+  ]},
+  { group: '🛑 행동 중재', items: [
+    { val: '타임아웃 (배제적)',                 icon: '⏸️', label: '타임아웃' },
+    { val: '반응차단 및 재지시',                icon: '🚫', label: '반응차단' },
+    { val: '행동 계약서 활용',                  icon: '📝', label: '행동 계약' },
+  ]},
+  { group: '🤝 관계·연계', items: [
+    { val: '또래 지원 활용',                    icon: '👫', label: '또래 지원' },
+    { val: '보호자 연계 지도',                  icon: '👨‍👩‍👧', label: '보호자 연계' },
+  ]},
+];
+
+const DISABILITIES = [
+  { val: '자폐스펙트럼장애 (ASD)', icon: '🧩', label: 'ASD' },
+  { val: '지적장애',               icon: '🧠', label: '지적장애' },
+  { val: '정서·행동장애',          icon: '💢', label: '정서·행동' },
+  { val: '발달지연',               icon: '🌱', label: '발달지연' },
+  { val: '언어장애',               icon: '🗨️', label: '언어장애' },
+  { val: '청각장애',               icon: '👂', label: '청각장애' },
+  { val: '시각장애',               icon: '👁️', label: '시각장애' },
+  { val: '지체장애',               icon: '♿', label: '지체장애' },
+  { val: '학습장애',               icon: '📒', label: '학습장애' },
+  { val: '중복장애',               icon: '🔗', label: '중복장애' },
+  { val: '기타',                   icon: '➕', label: '기타' },
+];
+
+const ANTE_CATS = [
+  {
+    cat: '🔇 자극 제거·수정',
+    items: [
+      { val: '청각 자극 제거 (종·벨·소음 차단)',    icon: '🔇', label: '소음 차단' },
+      { val: '시각 자극 축소 (게시물·조명 조정)',    icon: '💡', label: '조명 조정' },
+      { val: '감각 자극 조정 (냄새·온도·촉감)',      icon: '🌡️', label: '감각 조정' },
+      { val: '좌석 위치 변경 (자극원과 거리 확보)',  icon: '💺', label: '좌석 변경' },
+      { val: '혐오 자극·물건 제거 또는 대체',       icon: '🗑️', label: '자극 제거' },
+    ]
+  },
+  {
+    cat: '📋 과제·활동 수정',
+    items: [
+      { val: '과제 난이도 하향 조정',               icon: '📉', label: '난이도 하향' },
+      { val: '과제량 감소 및 단계적 제시',           icon: '✂️', label: '과제량 감소' },
+      { val: '선호 활동 먼저 배치',                 icon: '💛', label: '선호 활동 먼저' },
+      { val: '과제 형태 변경 (구두→시각·조작)',      icon: '🔀', label: '형태 변경' },
+      { val: '과제 시간 단축 및 휴식 삽입',         icon: '⏱️', label: '시간 단축' },
+    ]
+  },
+  {
+    cat: '⏰ 사전 예고·구조화',
+    items: [
+      { val: '전환 활동 사전 예고 (타이머·언어 안내)', icon: '⏰', label: '전환 예고' },
+      { val: '시각적 일과표·스케줄 제시',            icon: '📅', label: '일과표 제시' },
+      { val: '수행 기대·규칙 사전 안내',             icon: '📢', label: '규칙 안내' },
+      { val: '선택권 제공 (두 가지 중 선택)',         icon: '🎯', label: '선택권 제공' },
+    ]
+  },
+  {
+    cat: '🤸 신체·컨디션 고려',
+    items: [
+      { val: '충분한 휴식 시간 먼저 제공',           icon: '😴', label: '휴식 먼저' },
+      { val: '감각 통합 활동 사전 제공',             icon: '🤸', label: '감각 통합' },
+      { val: '건강·컨디션 확인 후 활동 조정',        icon: '🌡️', label: '컨디션 확인' },
+      { val: '선호 강화제 미리 제시',               icon: '⭐', label: '강화제 제시' },
+    ]
+  },
+];
+
+// ── 앱 상태 ──
+let students = JSON.parse(localStorage.getItem('spe_stu') || '[]');
+let records  = JSON.parse(localStorage.getItem('spe_rec') || '[]');
+let curId = null;
+let editId = null;
+let selSev = 2;
+let selBeh = new Set();
+let selStr = new Set();
+let selAnte = new Set();
+
+// ── 초기화 ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderStuList();
+  buildChips();
+  document.getElementById('rDate').value = todayStr();
+  setSev(2);
+  updateApiBtn();
+});
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function buildChips() {
+  // 장애 유형 — 타일 그리드
+  document.getElementById('disChips').innerHTML =
+    DISABILITIES.map(d =>
+      `<div class="tile" onclick="toggleChip(this)" data-val="${escAttr(d.val)}">
+        <span class="tile-icon">${d.icon}</span>
+        <span class="tile-label">${d.label}</span>
+      </div>`).join('');
+
+  // 문제 행동 — 카테고리 그룹 + 타일 그리드
+  document.getElementById('behChips').innerHTML =
+    BEHAVIORS.map(grp => `
+      <div class="ante-cat">
+        <div class="ante-cat-label" style="${grp.labelStyle}">${grp.group}</div>
+        <div class="tile-grid">
+          ${grp.items.map(b =>
+            `<div class="tile rose" onclick="toggleSet(this,'b')" data-val="${escAttr(b.val)}">
+              <span class="tile-icon">${b.icon}</span>
+              <span class="tile-label">${b.label}</span>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+
+  // 지도 전략 — 카테고리 그룹 + 타일 그리드
+  document.getElementById('strChips').innerHTML =
+    STRATEGIES.map(grp => `
+      <div class="ante-cat">
+        <div class="ante-cat-label" style="background:linear-gradient(135deg,#f0fdfa,#ecfdf5);border-bottom-color:rgba(13,148,136,0.22);">
+          ${grp.group}
+        </div>
+        <div class="tile-grid">
+          ${grp.items.map(s =>
+            `<div class="tile teal" onclick="toggleSet(this,'s')" data-val="${escAttr(s.val)}">
+              <span class="tile-icon">${s.icon}</span>
+              <span class="tile-label">${s.label}</span>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+
+  // 선행사건 중재 — 카테고리 그룹 + 타일 그리드
+  document.getElementById('anteSection').innerHTML =
+    ANTE_CATS.map(cat => `
+      <div class="ante-cat">
+        <div class="ante-cat-label">${cat.cat}</div>
+        <div class="tile-grid">
+          ${cat.items.map(item =>
+            `<div class="tile amber" onclick="toggleSet(this,'a')" data-val="${escAttr(item.val)}">
+              <span class="tile-icon">${item.icon}</span>
+              <span class="tile-label">${item.label}</span>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+}
+
+function toggleChip(el) {
+  el.classList.toggle('on');
+}
+
+function toggleSet(el, type) {
+  el.classList.toggle('on');
+  const v = el.dataset.val;
+  const set = type === 'b' ? selBeh : type === 's' ? selStr : selAnte;
+  el.classList.contains('on') ? set.add(v) : set.delete(v);
+}
+
+// ── 학생 관리 ──
+function renderStuList() {
+  const c = document.getElementById('stuList');
+  if (!students.length) {
+    c.innerHTML = `<div class="empty" style="padding:22px 10px;"><div class="empty-icon">👤</div><div class="empty-txt" style="font-size:0.82rem;">학생을 추가하면<br>여기에 표시됩니다.</div></div>`;
+    return;
+  }
+  c.innerHTML = students.map(s => {
+    const cnt = records.filter(r => r.sid === s.id).length;
+    return `<div class="stu-item ${s.id===curId?'active':''}" onclick="selStu('${s.id}')">
+      <div class="stu-avatar">${s.name.charAt(0)}</div>
+      <div class="stu-info">
+        <div class="stu-name">${esc(s.name)}</div>
+        <div class="stu-meta">${esc(s.grade||'학년 미입력')} · ${esc(s.dis&&s.dis[0]?s.dis[0].split(' ')[0]:'장애 미입력')}</div>
+      </div>
+      <span class="rec-badge ${cnt>=3?'ok':''}">${cnt}건</span>
+    </div>`;
+  }).join('');
+}
+
+function openAddModal() {
+  editId = null;
+  document.getElementById('stuModalTitle').textContent = '새 학생 추가';
+  document.getElementById('mName').value = '';
+  document.getElementById('mGrade').value = '';
+  document.getElementById('mSev').value = '';
+  document.getElementById('mMemo').value = '';
+  document.querySelectorAll('#disChips .tile').forEach(el => el.classList.remove('on'));
+  document.getElementById('stuModal').classList.add('open');
+  setTimeout(() => document.getElementById('mName').focus(), 100);
+}
+
+function openEditModal() {
+  if (!curId) return;
+  const s = students.find(x => x.id === curId);
+  if (!s) return;
+  editId = s.id;
+  document.getElementById('stuModalTitle').textContent = '학생 정보 수정';
+  document.getElementById('mName').value = s.name;
+  document.getElementById('mGrade').value = s.grade || '';
+  document.getElementById('mSev').value = s.sev || '';
+  document.getElementById('mMemo').value = s.memo || '';
+  document.querySelectorAll('#disChips .chip').forEach(el => {
+    el.classList.toggle('on', (s.dis||[]).includes(el.dataset.val));
+  });
+  document.getElementById('stuModal').classList.add('open');
+}
+
+function saveStuModal() {
+  const name = document.getElementById('mName').value.trim();
+  if (!name) { toast('학생 이름을 입력해 주세요.', 'err'); return; }
+  const dis = [...document.querySelectorAll('#disChips .tile.on')].map(el => el.dataset.val);
+  const data = {
+    name, grade: document.getElementById('mGrade').value.trim(),
+    dis, sev: document.getElementById('mSev').value,
+    memo: document.getElementById('mMemo').value.trim(),
+    upd: Date.now()
+  };
+  if (editId) {
+    const i = students.findIndex(s => s.id === editId);
+    if (i >= 0) students[i] = { ...students[i], ...data };
+  } else {
+    data.id = 'stu_' + Date.now(); data.cre = Date.now();
+    students.push(data); curId = data.id;
+  }
+  persist(); renderStuList(); closeStuModal();
+  if (curId) renderDetail(curId);
+  toast('저장되었습니다.', 'ok');
+}
+
+function deleteCurrentStu() {
+  if (!curId) return;
+  const s = students.find(x => x.id === curId);
+  if (!s || !confirm(`"${s.name}" 학생의 모든 기록이 삭제됩니다. 계속하시겠습니까?`)) return;
+  students = students.filter(x => x.id !== curId);
+  records  = records.filter(r => r.sid !== curId);
+  curId = null; persist(); renderStuList();
+  document.getElementById('detailView').style.display = 'none';
+  document.getElementById('welcomeView').style.display = 'flex';
+  toast('삭제되었습니다.');
+}
+
+function selStu(id) {
+  curId = id; renderStuList(); renderDetail(id);
+  document.getElementById('welcomeView').style.display = 'none';
+  document.getElementById('detailView').style.display = 'block';
+  switchTab(1);
+}
+
+function renderDetail(id) {
+  const s = students.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('hdrName').textContent = s.name;
+  document.getElementById('hdrMeta').textContent =
+    [s.grade, s.sev, (s.dis||[]).join(' · ')].filter(Boolean).join(' | ');
+
+  const row = (l, v) => `<div class="fg"><label class="field-label" style="font-size:0.79rem;">${l}</label><div class="info-val-box">${esc(v||'미입력')}</div></div>`;
+  document.getElementById('infoDisplay').innerHTML =
+    row('학생 이름', s.name) + row('학년 · 반', s.grade) + row('장애 정도', s.sev) +
+    row('등록일', new Date(s.cre).toLocaleDateString('ko-KR')) +
+    `<div class="fg full"><label class="field-label" style="font-size:0.79rem;">주요 특성 메모</label><div class="info-val-box" style="white-space:pre-wrap;">${esc(s.memo||'메모 없음')}</div></div>`;
+
+  document.getElementById('disDisplay').innerHTML = s.dis && s.dis.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:9px;">${s.dis.map(d=>`<span class="dis-chip">${esc(d)}</span>`).join('')}</div>`
+    : `<div style="color:var(--text-muted);font-size:0.9rem;">장애 유형 미입력</div>`;
+}
+
+// ── 기록 관리 ──
+function setSev(n) {
+  selSev = n;
+  [1,2,3].forEach(i => {
+    const b = document.getElementById('sv'+i);
+    b.className = 'sev-btn' + (i===n ? ` s${i}` : '');
+  });
+}
+
+function saveRecord() {
+  if (!curId) { toast('학생을 먼저 선택하세요.', 'err'); return; }
+  const date = document.getElementById('rDate').value;
+  if (!date) { toast('날짜를 선택해 주세요.', 'err'); return; }
+  if (!selBeh.size) { toast('문제 행동을 하나 이상 선택해 주세요.', 'err'); return; }
+
+  records.unshift({
+    id: 'rec_'+Date.now(), sid: curId, date, sev: selSev,
+    beh: [...selBeh], ante: document.getElementById('rAnte').value.trim(),
+    anteInts: [...selAnte], anteIntMemo: document.getElementById('anteIntMemo').value.trim(),
+    guide: document.getElementById('rGuide').value.trim(),
+    str: [...selStr], res: document.getElementById('rResult').value.trim(),
+    failedStr: document.getElementById('rFailedStr').value.trim(),
+    cre: Date.now()
+  });
+  persist(); renderStuList(); renderRecList(); clearRecForm();
+  toast('기록이 저장되었습니다.', 'ok');
+}
+
+function clearRecForm() {
+  document.getElementById('rDate').value = todayStr();
+  document.getElementById('rAnte').value = '';
+  document.getElementById('anteIntMemo').value = '';
+  document.getElementById('rGuide').value = '';
+  document.getElementById('rResult').value = '';
+  document.getElementById('rFailedStr').value = '';
+  selBeh.clear(); selStr.clear(); selAnte.clear(); setSev(2);
+  document.querySelectorAll('#behChips .tile, #strChips .tile, #anteSection .tile').forEach(el => el.classList.remove('on'));
+}
+
+// ── 나이스 문장 생성 ──
+function formatKorDate(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  return `${y}년 ${m}월 ${d}일`;
+}
+
+function generateNEISSentence(rec) {
+  const date = formatKorDate(rec.date);
+  const sevMap = { 1: '가벼운 수준', 2: '중간 수준', 3: '심각한 수준' };
+  const sev = sevMap[rec.sev] || '중간 수준';
+  const behStr = rec.beh.join(', ');
+  const anteInts = (rec.anteInts || []);
+  const anteIntMemo = (rec.anteIntMemo || '').trim();
+  const hasAnte = anteInts.length > 0 || anteIntMemo;
+
+  let anteIntStr = '';
+  if (hasAnte) {
+    const items = anteInts.map(s => s.trim());
+    if (anteIntMemo) items.push(anteIntMemo);
+    if (items.length === 1) {
+      anteIntStr = items[0];
+    } else {
+      anteIntStr = items.slice(0, -1).join(', ') + ' 및 ' + items[items.length - 1];
+    }
+  }
+
+  const strClean = (rec.str || []).map(s => s.replace(/\s*\(.*?\)/g, '').trim());
+  const strStr = strClean.join(', ');
+  const parts = [];
+
+  if (rec.ante && rec.ante.trim()) {
+    parts.push(`${date}, ${rec.ante.trim()}. 이 상황에서 ${behStr} 행동이 ${sev}으로 나타남.`);
+  } else {
+    parts.push(`${date}, ${behStr} 행동이 ${sev}으로 관찰됨.`);
+  }
+
+  if (hasAnte) {
+    parts.push(`담당 교사는 ${anteIntStr}을(를) 통해 선행사건을 수정하였음.`);
+  }
+
+  const guide = (rec.guide || '').trim();
+  if (strStr && guide) {
+    parts.push(`아울러 ${strStr} 전략을 적용하여 지도하였으며, ${guide.replace(/\.$/, '')}하였음.`);
+  } else if (strStr) {
+    parts.push(`아울러 ${strStr} 전략을 적용하여 지도하였음.`);
+  } else if (guide) {
+    parts.push(`아울러 ${guide.replace(/\.$/, '')}하는 방식으로 지도하였음.`);
+  }
+
+  if (rec.res && rec.res.trim()) {
+    const r = rec.res.trim();
+    const last = r.slice(-1);
+    parts.push(last === '.' || last === '음' || last === '함' || last === '됨' ? r : r + '.');
+  }
+
+  return parts.join(' ');
+}
+
+function copyNEIS(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  const txt = generateNEISSentence(r);
+  const btn = document.getElementById('ncopy_' + id);
+
+  const doFeedback = () => {
+    if (btn) {
+      btn.textContent = '✅ 복사됨';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋 나이스 복사'; btn.classList.remove('copied'); }, 2000);
+    }
+    toast('나이스 문구가 클립보드에 복사되었습니다!', 'ok');
+  };
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(doFeedback).catch(() => fallbackCopy(txt, doFeedback));
+  } else {
+    fallbackCopy(txt, doFeedback);
+  }
+}
+
+function fallbackCopy(txt, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0;';
+  document.body.appendChild(ta); ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  cb();
+}
+
+function renderRecList() {
+  if (!curId) return;
+  const recs = records.filter(r => r.sid === curId).sort((a,b) => new Date(b.date)-new Date(a.date));
+  document.getElementById('recCntBadge').textContent = `총 ${recs.length}건`;
+  const wrap = document.getElementById('recListWrap');
+  if (!recs.length) {
+    wrap.innerHTML = `<div class="empty"><div class="empty-icon">📄</div><div class="empty-txt">아직 기록이 없습니다.<br>위 양식을 작성하고 저장해 주세요.</div></div>`;
+    return;
+  }
+  const sl = ['','약함 🟢','중간 🟡','강함 🔴'];
+  const sc = ['','s1','s2','s3'];
+  wrap.innerHTML = `<div class="rec-list">${recs.map(r => {
+    const neis = generateNEISSentence(r);
+    return `
+    <div class="rec-card">
+      <button class="rec-del" onclick="delRec('${r.id}')" title="삭제">✕</button>
+      <div class="rec-card-top ${sc[r.sev]}">
+        <span class="rec-date-badge">📅 ${r.date}</span>
+        <span class="rec-sev-badge ${sc[r.sev]}">강도: ${sl[r.sev]}</span>
+        <div class="beh-tags">${r.beh.map(b=>`<span class="beh-tag">${esc(b)}</span>`).join('')}</div>
+      </div>
+      <div class="rec-card-body">
+        ${(r.ante||r.guide) ? `<div class="rec-row">
+          ${r.ante?`<div class="rec-field"><div class="d-label">📍 발생 상황</div><div class="d-val">${esc(r.ante)}</div></div>`:''}
+          ${r.guide?`<div class="rec-field"><div class="d-label">📝 지도 내용</div><div class="d-val">${esc(r.guide)}</div></div>`:''}
+        </div>`:''}
+        ${(r.anteInts&&r.anteInts.length)||r.anteIntMemo?`
+          <div>
+            <div class="d-label" style="margin-bottom:6px;">🔧 선행사건 중재</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;">
+              ${(r.anteInts||[]).map(a=>`<span class="ante-tag">${esc(a)}</span>`).join('')}
+              ${r.anteIntMemo?`<span class="ante-tag" style="font-style:italic;">✏ ${esc(r.anteIntMemo)}</span>`:''}
+            </div>
+          </div>`:''}
+        ${r.str&&r.str.length?`<div><div class="d-label" style="margin-bottom:6px;">✅ 사용 전략</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${r.str.map(s=>`<span class="beh-tag str-tag">${esc(s)}</span>`).join('')}</div></div>`:''}
+        ${r.res?`<div><div class="d-label">📊 결과</div><div class="d-val" style="margin-top:3px;">${esc(r.res)}</div></div>`:''}
+        ${r.failedStr?`
+          <div style="background:rgba(225,29,72,0.05);border:1.5px solid rgba(225,29,72,0.2);border-radius:11px;padding:11px 14px;">
+            <div class="d-label" style="color:#be123c;margin-bottom:4px;">❌ 효과 없었던 전략 (AI 재분석 반영)</div>
+            <div class="d-val" style="color:#7f1d1d;font-size:0.86rem;">${esc(r.failedStr)}</div>
+          </div>`:''}
+        <div class="neis-box">
+          <div class="neis-header">
+            <div class="neis-title">
+              📄 나이스 기재 문구
+              <span class="neis-badge">자동 생성</span>
+            </div>
+            <button class="neis-copy-btn" id="ncopy_${r.id}" onclick="copyNEIS('${r.id}')">📋 나이스 복사</button>
+          </div>
+          <div class="neis-text" id="ntext_${r.id}">${esc(neis)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function delRec(id) {
+  if (!confirm('이 기록을 삭제하시겠습니까?')) return;
+  records = records.filter(r => r.id !== id);
+  persist(); renderStuList(); renderRecList();
+  toast('삭제되었습니다.');
+}
+
+// ── AI 피드백 ──
+function renderAiTab() {
+  if (!curId) return;
+  const s = students.find(x => x.id === curId);
+  const recs = records.filter(r => r.sid === curId);
+  const wrap = document.getElementById('aiWrap');
+
+  const bCnt = {}; const sCnt = {};
+  recs.forEach(r => {
+    r.beh.forEach(b => { bCnt[b] = (bCnt[b]||0)+1; });
+    (r.str||[]).forEach(s => { sCnt[s] = (sCnt[s]||0)+1; });
+  });
+  const avgSev = recs.length ? (recs.reduce((a,r)=>a+r.sev,0)/recs.length).toFixed(1) : '-';
+  const failedCnt = recs.filter(r => r.failedStr && r.failedStr.trim()).length;
+
+  const summary = `
+    <div class="summary-row">
+      <div class="sum-card"><div class="sum-num">${recs.length}</div><div class="sum-label">총 기록</div></div>
+      <div class="sum-card"><div class="sum-num">${Object.keys(bCnt).length}</div><div class="sum-label">행동 유형</div></div>
+      <div class="sum-card"><div class="sum-num">${avgSev}</div><div class="sum-label">평균 강도</div></div>
+      <div class="sum-card ${failedCnt>0?'failed-sum-card':''}">
+        <div class="sum-num">${failedCnt}</div>
+        <div class="sum-label">미효과 기록</div>
+      </div>
+    </div>
+
+    <div class="cycle-box">
+      <div class="cycle-title">🔄 AI 피드백 → 적용 → 재분석 사이클</div>
+      <div class="cycle-flow">
+        <div class="c-step next">① AI 추천 전략<br>시도</div>
+        <div class="c-arr">→</div>
+        <div class="c-step">② 학생 반응<br>관찰 (1~2주)</div>
+        <div class="c-arr">→</div>
+        <div class="c-step ok">효과 있음<br>✅ 계속 유지</div>
+        <div class="c-arr" style="color:#e5e7eb;">|</div>
+        <div class="c-step fail">효과 없음<br>❌ 아래 기재</div>
+        <div class="c-arr">→</div>
+        <div class="c-step next">③ 2단계 기록<br>→ AI 재분석</div>
+      </div>
+      <div class="cycle-note">
+        💡 <strong>효과 없는 전략은 반드시 기록하세요.</strong>
+        2단계 상담 기록 하단의 <strong>"❌ AI 추천 전략 중 효과 없었던 내용"</strong> 란에 구체적으로 적으면,
+        다음 AI 분석 시 해당 전략을 제외하고 그 학생에게 더 적합한 대안을 제시합니다.<br>
+        ${failedCnt > 0 ? `<span style="color:#be123c;font-weight:700;">현재 ${failedCnt}건의 미효과 전략이 기록되어 다음 AI 분석에 반영됩니다.</span>` : '아직 미효과 전략 기록 없음 — 전략 시도 후 결과를 기재해 주세요.'}
+      </div>
+    </div>`;
+
+  if (recs.length < 3) {
+    wrap.innerHTML = summary + `<div class="need-more">⚠️ AI 피드백을 받으려면 기록이 최소 3개 필요합니다. (현재 ${recs.length}개)</div>`;
+    return;
+  }
+
+  const apiKey = localStorage.getItem('spe_key');
+  const prev = localStorage.getItem(`spe_fb_${curId}`);
+  const prevTime = localStorage.getItem(`spe_ft_${curId}`);
+
+  wrap.innerHTML = summary +
+    `<div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;">
+      <button class="gen-btn" onclick="genFeedback()" id="genBtn">
+        ✨ AI 피드백 생성하기
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      ${!apiKey
+        ? `<span style="font-size:0.85rem;color:var(--amber);font-weight:700;">⚠️ API 키를 먼저 설정해 주세요.</span>`
+        : `<span style="font-size:0.85rem;color:var(--success);font-weight:700;">✅ API 키 설정됨</span>`}
+    </div>
+    <div id="fbContainer">
+      ${prev
+        ? `<div class="fb-box"><div class="fb-head"><span style="font-size:26px;">🤖</span><div class="fb-title">AI 긍정적 행동지원 피드백</div><span class="fb-time">${new Date(parseInt(prevTime||Date.now())).toLocaleString('ko-KR')}</span></div><div class="fb-text">${esc(prev)}</div></div>${fbActionGuide()}`
+        : `<div class="empty"><div class="empty-icon">💡</div><div class="empty-txt">위 버튼을 눌러 AI 피드백을 받아보세요.<br>긍정적 행동지원(PBS) 원칙에 따라<br>맞춤형 지도 방안을 제시합니다.</div></div>`}
+    </div>`;
+}
+
+async function genFeedback() {
+  const apiKey = localStorage.getItem('spe_key');
+  if (!apiKey) { toast('API 키를 먼저 설정해 주세요.', 'err'); openApiModal(); return; }
+
+  const s = students.find(x => x.id === curId);
+  const recs = records.filter(r => r.sid === curId).sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  const btn = document.getElementById('genBtn');
+  const box = document.getElementById('fbContainer');
+  if (btn) btn.disabled = true;
+  box.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div><div style="font-size:0.92rem;color:var(--text-muted);font-weight:700;">AI가 기록을 분석하고 있습니다…<br>잠시 기다려 주세요.</div></div>`;
+
+  const disStr = (s.dis||[]).join(', ') || '미기재';
+  const sl = ['','약함','중간','강함'];
+
+  const failedList = recs
+    .filter(r => r.failedStr && r.failedStr.trim())
+    .map((r, i) => `[${r.date}] ${r.failedStr.trim()}`);
+  const failedSection = failedList.length
+    ? `\n【이미 시도했으나 효과 없었던 전략 (교사 직접 기록)】\n${failedList.join('\n')}\n⚠️ 위 전략들은 반드시 추천에서 제외하고, 대안적 접근을 제안해 주세요.`
+    : '';
+
+  const recsTxt = recs.map((r,i) => `[기록 ${i+1}] 날짜: ${r.date} / 강도: ${sl[r.sev]}
+- 문제 행동: ${r.beh.join(', ')}
+- 발생 상황: ${r.ante||'미기재'}
+- 선행사건 중재: ${[...(r.anteInts||[]), r.anteIntMemo||''].filter(Boolean).join(', ')||'미기재'}
+- 지도 내용: ${r.guide||'미기재'}
+- 사용 전략: ${(r.str||[]).join(', ')||'미기재'}
+- 결과: ${r.res||'미기재'}
+- 효과 없었던 전략: ${r.failedStr||'없음'}`).join('\n\n');
+
+  const prompt = `당신은 한국 특수교육 현장의 긍정적 행동지원(PBS: Positive Behavioral Support) 전문가입니다.
+
+다음은 특수교육 대상 학생(이하 '학생 A', 개인정보 보호를 위해 이름 비공개)의 행동 관찰 기록입니다.
+
+【학생 기본 정보】
+- 장애 유형: ${disStr}
+- 장애 정도: ${s.sev||'미기재'}
+- 교사 메모: ${s.memo||'미기재'}
+${failedSection}
+【행동 관찰 기록 (총 ${recs.length}건)】
+${recsTxt}
+
+위 기록을 바탕으로 특수교사에게 실질적으로 도움이 되는 긍정적 행동지원 계획을 작성해 주세요.
+한국 특수교육 현장에 맞게, 교실에서 즉시 적용 가능한 내용으로 구체적으로 작성해 주세요.
+
+반드시 아래 항목을 포함하여 작성하세요:
+
+1. 📊 행동 패턴 분석
+   - 주요 문제 행동의 기능 추정 (관심 추구 / 회피·도피 / 감각 자극 / 선호물 요구)
+   - 반복 패턴 및 고위험 상황
+   - ⚠️ 추정이므로 실제 학생과 다를 수 있음을 교사에게 명시
+
+2. 🛡️ 우선순위별 긍정적 지도 대안 (각 전략마다 반드시 포함)
+   각 전략을 제시할 때 반드시 다음 형식으로 작성하세요:
+   - [1순위] 전략명: 구체적 적용 방법
+     → 이 전략이 안 맞는 신호: (학생이 이런 반응을 보이면 이 전략이 맞지 않는 것입니다)
+   - [2순위] 전략명: 구체적 적용 방법
+     → 이 전략이 안 맞는 신호: ...
+   (3순위까지 제시)
+
+3. 🌱 대체행동 교수 및 의사소통 지원
+   - 목표 대체행동 제안 및 교수 방법
+   - 기능적 의사소통 훈련(FCT) 적용 방안
+
+4. 🎯 강화 전략
+   - 적절한 강화제 유형 및 강화 스케줄
+
+5. 🤝 긍정적 교사-학생 관계 형성 전략
+
+6. 📞 가정 연계 방안
+
+7. 📈 단기 목표 (4주) 및 중기 목표 (1학기)
+   - 측정 가능한 구체적 목표 제시
+
+8. 📝 다음 상담 기록 안내 (반드시 포함)
+   다음 문구를 그대로 포함해 주세요:
+   "위 전략들을 1~2주 시도해 보신 후, 효과가 없거나 오히려 행동이 심화된 전략이 있다면 [2단계 상담 기록] 하단의 '❌ AI 추천 전략 중 효과 없었던 내용' 란에 구체적으로 기재해 주세요. 다음 AI 분석 시 해당 전략을 제외하고 그 학생에게 더 적합한 대안을 제시합니다. 기록이 쌓일수록 분석의 정확도가 높아집니다."
+
+교사에게 희망과 실천 의지를 줄 수 있도록 긍정적이고 따뜻한 어조로 작성해 주세요.`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 2800 }
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const fb = data.candidates[0].content.parts[0].text;
+    localStorage.setItem(`spe_fb_${curId}`, fb);
+    localStorage.setItem(`spe_ft_${curId}`, Date.now().toString());
+
+    box.innerHTML = `<div class="fb-box"><div class="fb-head"><span style="font-size:26px;">🤖</span><div class="fb-title">AI 긍정적 행동지원 피드백</div><span class="fb-time">${new Date().toLocaleString('ko-KR')}</span></div><div class="fb-text">${esc(fb)}</div></div>${fbActionGuide()}`;
+    toast('AI 피드백이 생성되었습니다.', 'ok');
+  } catch (err) {
+    box.innerHTML = `<div style="background:rgba(225,29,72,0.06);border:1.5px solid rgba(225,29,72,0.22);border-radius:14px;padding:22px;color:#be123c;"><strong>오류가 발생했습니다</strong><br><span style="font-size:0.87rem;opacity:0.8;">${esc(err.message)}</span><br><span style="font-size:0.8rem;opacity:0.6;margin-top:8px;display:block;">API 키를 확인하거나 잠시 후 다시 시도해 주세요.</span></div>`;
+    toast('오류: ' + err.message, 'err');
+  }
+  if (btn) btn.disabled = false;
+}
+
+function fbActionGuide() {
+  return `
+    <div class="fb-action">
+      <div class="fb-action-title">📌 이 피드백 활용 방법</div>
+      <div class="fb-action-list">
+        <div class="fb-action-item">
+          <span class="fb-action-num a1">1</span>
+          <span>위 <strong>우선순위 전략</strong>을 1~2주 직접 시도해 보세요. 모든 전략을 한꺼번에 적용할 필요는 없습니다.</span>
+        </div>
+        <div class="fb-action-item">
+          <span class="fb-action-num a2">2</span>
+          <span>이 피드백은 <strong>행동 기능 추정</strong>에 기반합니다. 학생마다 반응이 다를 수 있으며, 효과가 없는 전략이 있어도 정상입니다.</span>
+        </div>
+        <div class="fb-action-item">
+          <span class="fb-action-num a3">3</span>
+          <span>효과가 없거나 행동이 심화된 전략은 <strong>2단계 상담 기록 → ❌ 효과 없었던 내용</strong>에 구체적으로 기재해 주세요.</span>
+        </div>
+        <div class="fb-action-item">
+          <span class="fb-action-num a4">4</span>
+          <span>기록이 쌓이면 <strong>AI 재분석</strong> 시 미효과 전략을 자동으로 제외하고 그 학생에게 더 적합한 대안을 제시합니다.</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── 탭 전환 ──
+function switchTab(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('tab'+i).classList.toggle('active', i===n);
+    document.getElementById('tc'+i).style.display = i===n ? 'block' : 'none';
+  });
+  if (n===2) renderRecList();
+  if (n===3) renderAiTab();
+}
+
+// ── 모달 ──
+function closeStuModal() { document.getElementById('stuModal').classList.remove('open'); }
+function closeStuModalOut(e) { if (e.target===document.getElementById('stuModal')) closeStuModal(); }
+function openApiModal() {
+  document.getElementById('apiIn').value = localStorage.getItem('spe_key')||'';
+  document.getElementById('apiModal').classList.add('open');
+  setTimeout(() => document.getElementById('apiIn').focus(), 100);
+}
+function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
+function closeApiModalOut(e) { if (e.target===document.getElementById('apiModal')) closeApiModal(); }
+function saveApiKey() {
+  const k = document.getElementById('apiIn').value.trim();
+  if (!k) { toast('API 키를 입력해 주세요.', 'err'); return; }
+  localStorage.setItem('spe_key', k); closeApiModal(); updateApiBtn();
+  toast('API 키가 저장되었습니다.', 'ok');
+}
+function clearApiKey() {
+  localStorage.removeItem('spe_key');
+  document.getElementById('apiIn').value = '';
+  closeApiModal(); updateApiBtn();
+  toast('API 키가 삭제되었습니다.');
+}
+function updateApiBtn() {
+  const btn = document.getElementById('apiKeyBtn');
+  const has = !!localStorage.getItem('spe_key');
+  btn.className = 'api-key-btn' + (has ? ' set' : '');
+  btn.textContent = has ? '✅ API 키 설정됨' : '🔑 API 키 설정';
+}
+
+// ── 유틸 ──
+function persist() {
+  localStorage.setItem('spe_stu', JSON.stringify(students));
+  localStorage.setItem('spe_rec', JSON.stringify(records));
+}
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (type?' '+type:'');
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeStuModal(); closeApiModal(); }
+});
+</script>
+</body>
+</html>
