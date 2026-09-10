@@ -258,6 +258,8 @@ textarea.einput{min-height:150px;resize:vertical;font-family:ui-monospace,Menlo,
 .origin .warn{display:block;margin-top:7px;padding:8px 10px;border-radius:8px;
   background:var(--core-bg);border:1px solid var(--core-line);color:var(--core)}
 .sc-badge.mine{background:var(--accent-soft);color:var(--accent-ink)}
+.sc-src{margin:0 0 10px;padding:8px 11px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--line);font-size:11.5px;line-height:1.7;color:var(--muted)}
 .qlist{max-height:46vh;overflow:auto;margin-top:12px;border:1px solid var(--line);border-radius:10px}
 .qrow{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
 .qrow:last-child{border-bottom:0}
@@ -393,6 +395,20 @@ footer.bottom p{max-width:100ch;margin:0 0 6px}
 #printHead{display:none;margin-bottom:6mm;border-bottom:2px solid #000;padding-bottom:3mm}
 #printHead h2{margin:0 0 3px;font-size:15pt}
 #printHead .pm{font-size:10pt;color:#333}
+#coopCard{margin:14px 0}
+#coopCard h2{margin:0 0 4px;font-size:15px}
+.coop-item{margin-top:12px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.coop-nm{font-size:14px;font-weight:800;color:var(--core)}
+.coop-nm span{margin-left:7px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.coop-where{margin-top:6px;font-size:12.5px;line-height:1.85;color:var(--ink)}
+.coop-where b{color:var(--accent-ink)}
+.coop-sc{display:inline-block;margin:2px 5px 2px 0;padding:2px 9px;border-radius:20px;
+  background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700}
+.coop-sc i{font-style:normal;font-weight:400;opacity:.75}
+.coop-none{margin-top:6px;font-size:12.5px;color:var(--muted)}
+.coop-note{margin:12px 0 0;padding:9px 11px;border-radius:8px;background:var(--core-bg);
+  border:1px solid var(--core-line);color:var(--core);font-size:12px;line-height:1.7}
+@media print{ #coopCard{break-inside:avoid;border:1px solid #999} }
 </style>
 
 <header class="top">
@@ -478,6 +494,15 @@ footer.bottom p{max-width:100ch;margin:0 0 6px}
     <div id="alwaysNote"></div>
     <div id="schoolRules"></div>
     <div id="hierWarn"></div>
+    <div class="card" id="coopCard" hidden>
+      <h2>🤝 공동교육과정으로 알아볼 과목</h2>
+      <p class="sub" id="coopSub"></p>
+      <div id="coopList"></div>
+      <p class="coop-note">※ 아래 학교가 그 과목을 <b>편성</b>했다는 뜻일 뿐,
+        공동교육과정으로 신청할 수 있다는 뜻은 아닙니다. 실제 개설·신청 방법은
+        학교와 교육청 안내를 따르세요. 편제표는 <b>학교알리미</b>(schoolinfo.go.kr)
+        공시 자료에 따른 것이며, 학교 사정에 따라 바뀔 수 있습니다.</p>
+    </div>
     <div class="semgrid" id="semGrid"></div>
   </section>
 </main>
@@ -1193,12 +1218,82 @@ function renderPrintHead(){
       · 희망 진로: ${esc(d ? state.area + ' / ' + d.n : '미선택')}
       · 기준: ${esc(TIERS[state.tier].t1)}
       · 선택 학점 합계: ${$('totalCredits').textContent}</div>
-    <div class="pm" style="margin-top:3px">※ 대학 권장과목 이수 여부는 지원자격이 아니며 정성평가 참고자료입니다.</div>`;
+    <div class="pm" style="margin-top:3px">※ 대학 권장과목 이수 여부는 지원자격이 아니며 정성평가 참고자료입니다.</div>
+    <div class="pm">※ 편제표는 학교알리미(schoolinfo.go.kr) 공시 자료에 따른 것입니다. 수강신청은 학교 안내로 확인하세요.</div>`;
+}
+
+/* ═══════════ 공동교육과정으로 알아볼 과목 ═══════════ */
+/* 우리 학교에 없는 핵심과목을, 같은 지역에서 그 과목을 여는 학교와 함께 보여
+   준다. 상담 자리에서 "그럼 어디에 물어봐야 하나요" 까지 답이 나오게 하려는
+   것이다. 쓰는 자료는 이 프로그램이 이미 품고 있는 학교알리미 공시 편제표다. */
+let COOP_IX = null;
+/** 과목 -> 그 과목을 여는 학교들. 한 번만 만들어 두고 다시 쓴다 (876개교 × 수십 과목) */
+function coopIndex(){
+  if (COOP_IX) return COOP_IX;
+  COOP_IX = new Map();
+  for (const s of SCHOOLS){
+    if (!s || !s.subjects) continue;
+    const seen = new Map();                       // 과목 -> 학기들
+    for (const sem of Object.keys(s.subjects)){
+      for (const x of (s.subjects[sem] || [])){
+        const k = norm(x.name);
+        if (!seen.has(k)) seen.set(k, []);
+        seen.get(k).push(sem);
+      }
+    }
+    for (const [k, sems] of seen){
+      if (!COOP_IX.has(k)) COOP_IX.set(k, []);
+      COOP_IX.get(k).push({ n:s.name, r:s.region || '', sems });
+    }
+  }
+  return COOP_IX;
+}
+/** 우리 학교와 얼마나 가까운가 — 같은 시군구 2, 같은 시도 1, 나머지 0 */
+function coopNear(mine, theirs){
+  const a = String(mine || '').split(/\s+/), b = String(theirs || '').split(/\s+/);
+  if (!a[0] || !b[0] || a[0] !== b[0]) return 0;
+  return (a[1] && b[1] && a[1] === b[1]) ? 2 : 1;
+}
+function renderCoop(){
+  const card = $('coopCard'), d = currentDept();
+  if (!d || !hasSchool()){ card.hidden = true; return; }
+  const plan = planOf(d, state.tier);
+  const gone = plan.core.filter(nm => availability(nm) === 'offsite');
+  const goneRec = plan.rec.filter(nm => availability(nm) === 'offsite');
+  if (!gone.length){
+    card.hidden = false;
+    $('coopSub').innerHTML = `<b>${esc(d.n)}</b>의 핵심과목은 모두 우리 학교에서 들을 수 있습니다.`
+      + (goneRec.length ? ` 권장과목 ${goneRec.length}과목은 개설되지 않았습니다.` : '');
+    $('coopList').innerHTML = '';
+    return;
+  }
+  card.hidden = false;
+  $('coopSub').innerHTML = `<b>${esc(d.n)}</b>의 핵심과목 가운데 <b>${gone.length}과목</b>이
+    우리 학교에 개설되지 않았습니다. 같은 지역에서 그 과목을 편성한 학교를 찾아 보았습니다.`;
+
+  const ix = coopIndex(), mine = SCHOOL.region || '';
+  $('coopList').innerHTML = gone.map(nm => {
+    const all = (ix.get(norm(nm)) || []).filter(x => x.n !== SCHOOL.name);
+    const near = all.map(x => ({ ...x, d:coopNear(mine, x.r) }))
+                    .filter(x => x.d > 0)
+                    .sort((a,b) => b.d - a.d || a.n.localeCompare(b.n, 'ko'));
+    const show = near.slice(0, 8);
+    const body = show.length
+      ? `<div class="coop-where">${show.map(x =>
+            `<span class="coop-sc">${esc(x.n)} <i>${esc(x.sems.map(semTitle)
+              .map(t => t.replace('학년 ','-').replace('학기','')).join('·'))}</i></span>`).join('')}
+          ${near.length > show.length ? `<b>… 그 밖에 ${near.length - show.length}곳</b>` : ''}</div>`
+      : `<div class="coop-none">같은 지역에서는 이 과목을 편성한 학교를 찾지 못했습니다.
+          시도 단위 온라인 공동교육과정을 알아보세요.
+          ${all.length ? `(전국으로는 ${all.length}곳이 편성)` : ''}</div>`;
+    return `<div class="coop-item">
+      <div class="coop-nm">${esc(nm)}<span>우리 학교 미개설</span></div>${body}</div>`;
+  }).join('');
 }
 
 function renderAll(){
   renderHeader(); renderTier(); renderPicker(); renderDeptDetail();
-  renderChecklist(); renderCredits(); renderRoadmap();
+  renderChecklist(); renderCredits(); renderRoadmap(); renderCoop();
 }
 
 /* ═══════════ 편집 모드 ═══════════ */
@@ -1608,6 +1703,8 @@ function schoolPickerBody(filter){
       <button class="btn primary wide" id="scAddNow">우리 학교 편제표 넣기</button>
     </div>`;
   }
+  if (items.length)
+    html += `<p class="sc-src">편제표는 <b>학교알리미</b>(schoolinfo.go.kr)에 공시된 2026학년도 자료에 따른 것입니다. 학교 사정에 따라 바뀔 수 있으니 수강신청은 학교 안내로 확인하세요.</p>`;
   for (const r of regions){
     html += `<div class="sc-region">${esc(r)} <span>${groups[r].length}</span></div>`;
     html += groups[r].map(({s,i})=>{
@@ -2256,6 +2353,7 @@ const SHARE = {
       this.edits.set(doc.name, { editor:row.editor, note:row.note, updatedAt:row.updatedAt });
       const at = SCHOOLS.findIndex(s => s.name === doc.name);
       if (at >= 0) SCHOOLS[at] = doc; else SCHOOLS.push(doc);
+      COOP_IX = null;   // 편제표가 바뀌었으니 과목→학교 지표를 다시 만든다
     }
     // 지금 쓰고 있는 학교가 고쳐졌으면 화면도 새 표로 바꾼다
     if (hasSchool() && this.edits.has(SCHOOL.name)){
