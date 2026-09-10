@@ -6,8 +6,8 @@
   · 그대로 나누어 주는 것은 얼마든지 좋습니다. 학교·연수·수업에 마음껏 쓰세요.
   · 다만 고쳐서 다시 내놓는 것(2차적 저작물 작성·배포)은 허락하지 않습니다.
     화면·이름·만든이를 바꾸어 자기 것처럼 내놓는 것도 여기에 들어갑니다.
-  · 고칠 곳이 있으면 고쳐 드립니다. 프로그램 안 「편집」에서 학교 표를 직접
-    고쳐 올릴 수 있고, 그 밖의 것은 만든이에게 알려주세요.
+  · 고칠 곳이 있으면 고쳐 드립니다. 프로그램 안 「편집 → 고친 편제표 보내기」로
+    우리 학교 표를 보내 주시면 확인한 뒤 모두에게 반영합니다.
 
   원본: https://yeonsu-pulse.histo5731.workers.dev/games/credit/
   학교 편제표는 학교알리미 공시 자료를 옮긴 것으로, 이용조건은 공시 자료를
@@ -258,6 +258,20 @@ textarea.einput{min-height:150px;resize:vertical;font-family:ui-monospace,Menlo,
 .origin .warn{display:block;margin-top:7px;padding:8px 10px;border-radius:8px;
   background:var(--core-bg);border:1px solid var(--core-line);color:var(--core)}
 .sc-badge.mine{background:var(--accent-soft);color:var(--accent-ink)}
+.qlist{max-height:46vh;overflow:auto;margin-top:12px;border:1px solid var(--line);border-radius:10px}
+.qrow{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.qrow:last-child{border-bottom:0}
+.qrow:hover{background:var(--surface2)}
+.qrow input{margin-top:3px;width:17px;height:17px;flex:none}
+.qmain{display:flex;flex-direction:column;gap:2px;font-size:12.5px;min-width:0}
+.qmain b{font-size:13.5px}
+.qsub{color:var(--muted);font-size:11.5px}
+.qnote{color:var(--ink)}
+.qwarn{color:var(--warn);font-size:11.5px}
+.qst{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:700}
+.qst.wait{background:var(--core-bg);color:var(--core)}
+.qst.done{background:var(--accent-soft);color:var(--accent-ink)}
+.qst.hold{background:var(--surface2);color:var(--muted)}
 .err{color:#DC2626;font-size:12px;min-height:16px;margin:6px 0 0}
 .tag .x{border:0;background:transparent;color:inherit;font-weight:900;cursor:pointer;margin-left:2px;padding:0 2px;font-size:12px;line-height:1}
 .editrow{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
@@ -444,7 +458,7 @@ footer.bottom p{max-width:100ch;margin:0 0 6px}
         <button class="mbtn" id="wizBtn">학교 편제표 다시 설정</button>
       </div>
       <div class="editrow">
-        <button class="mbtn" id="shareBtn" style="flex:1">고친 표를 모두가 보게 올리기</button>
+        <button class="mbtn" id="shareBtn" style="flex:1">고친 편제표 보내기</button>
       </div>
       <div class="editrow">
         <button class="mbtn primary" id="exportBtn" style="flex:1">HTML 내보내기</button>
@@ -474,7 +488,7 @@ footer.bottom p{max-width:100ch;margin:0 0 6px}
   만든이 이재영 · 이용조건 <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.ko"
     target="_blank" rel="noopener">CC BY-ND 4.0</a> —
   <b>그대로 나누어 주는 것은 자유, 고쳐서 다시 내놓는 것은 금지</b>합니다.<br>
-  학교 편제표는 학교알리미 공시 자료입니다. 우리 학교 표를 고치시려면 위쪽 <b>편집</b>을 눌러주세요.<br>
+  학교 편제표는 학교알리미 공시 자료입니다. 우리 학교 표가 다르면 위쪽 <b>편집</b> → <b>고친 편제표 보내기</b>로 알려주세요.<br>
   원본 <a id="originLink" href="https://yeonsu-pulse.histo5731.workers.dev/games/credit/"
     target="_blank" rel="noopener">yeonsu-pulse.histo5731.workers.dev/games/credit/</a>
   <span class="warn" id="copyWarn" hidden></span>
@@ -2205,21 +2219,21 @@ $('exportBtn').onclick = async ()=>{
 };
 
 
-/* ═══════════ 함께 고친 편제표 ═══════════ */
+/* ═══════════ 함께 고치는 편제표 ═══════════ */
 /* 이 파일이 품고 있는 876개교는 학교알리미 공시본이다. 공시본은 학교가 실제로
    여는 표와 어긋날 때가 있다 — 공시 뒤에 바꾼 학교가 있고, 공시 파일이 기계로
    못 읽히는 모양인 학교도 있다.
 
-   그래서 그 학교 선생님이 직접 고칠 수 있게 했다. 고친 표는 원본 자리에서
-   받아 와 공시본 **위에 덮는다.** 못 받으면(파일로 열었거나 인터넷이 없으면)
-   그냥 공시본으로 돈다 — 어디서 열어도 늘 돌아간다. */
+   그래서 누구나 고쳐 **보낼** 수 있게 했다. 다만 학생에게 보이는 것은 만든이가
+   훑어본 뒤로 미룬다 — 편제표가 틀리면 학생이 시간표를 그르치기 때문이다.
+   반영된 표는 원본 자리에서 받아 와 공시본 위에 덮는다. 못 받으면(파일로
+   열었거나 인터넷이 없으면) 그냥 공시본으로 돈다. */
 const SHARE = {
   home: 'https://yeonsu-pulse.histo5731.workers.dev',
   edits: new Map(),          // 학교이름 -> { editor, note, updatedAt }
-  code: lsGet('hs-sim-schoolcode-v4', ''),
 
-  async api(path, body){
-    const r = await fetch(this.home + path, {
+  async api(body){
+    const r = await fetch(this.home + '/api/school-save', {
       method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
     });
     const j = await r.json().catch(()=>({}));
@@ -2261,55 +2275,124 @@ const SHARE = {
     const e = this.edits.get(name);
     if (!e) return '';
     const day = String(e.updatedAt || '').slice(0, 10);
-    return `${esc(e.editor)} 선생님이 고침${day ? ' · ' + day : ''}`;
+    return `${esc(e.editor)} 고침${day ? ' · ' + day : ''}`;
   },
 
-  /* ── 올리기 ── */
+  /* ── 누구나: 고쳐서 보내기 ── */
   open(){
     if (!hasSchool()) return toast('먼저 학교를 고르거나 편제표를 넣어주세요.');
-    const mine = this.mark(SCHOOL.name);
-    openModal(`<h3>${esc(SCHOOL.name)} 편제표를 모두가 보게 올리기</h3>
-      <p class="sub">올리면 <b>곧바로</b> 이 시뮬레이터를 여는 모든 사람에게 이 표가 보입니다.
-         학교알리미 공시본은 지워지지 않고 그대로 남아, 언제든 되돌릴 수 있습니다.</p>
-      ${mine ? `<p class="noteline">지금 올라가 있는 판: ${mine}</p>` : ''}
-      <label class="mlab">학교 편집 코드
-        <input class="minp" id="shCode" type="password" placeholder="학교마다 다릅니다" value="${escA(this.code)}">
-      </label>
-      <label class="mlab">고친 분
+    const now = this.mark(SCHOOL.name);
+    openModal(`<h3>${esc(SCHOOL.name)} 편제표 고침 보내기</h3>
+      <p class="sub">지금 화면에 있는 표를 그대로 보냅니다. 만든이가 훑어본 뒤
+         반영하면, 그때부터 이 시뮬레이터를 여는 <b>모든 사람</b>에게 이 표가 보입니다.
+         곧바로 바뀌지는 않습니다 — 틀린 표가 학생에게 가지 않도록 한 번 거릅니다.</p>
+      ${now ? `<p class="noteline">지금 올라가 있는 판: ${now}</p>` : ''}
+      <label class="mlab">보내는 분 <span style="font-weight:400">(학교·이름·업무)</span>
         <input class="minp" id="shWho" placeholder="예) 신봉고 김○○ (교육과정부)">
       </label>
-      <label class="mlab">무엇을 고쳤는지 한 줄
-        <input class="minp" id="shNote" placeholder="예) 2학기 예술 묶음 택1 로 바로잡음">
+      <label class="mlab">되물을 곳 <span style="font-weight:400">(선택 — 이상하면 여쭙겠습니다)</span>
+        <input class="minp" id="shTo" placeholder="예) 010-0000-0000 또는 메일">
+      </label>
+      <label class="mlab">무엇을 고쳤는지
+        <input class="minp" id="shNote" placeholder="예) 2학기 예술 묶음을 택1 로 바로잡음">
       </label>
       <div class="mrow">
         <button class="mbtn" onclick="closeModal()">취소</button>
-        <button class="mbtn primary" id="shGo">올리기</button>
-        ${mine ? '<button class="mbtn danger" id="shRevert">공시본으로 되돌리기</button>' : ''}
+        <button class="mbtn primary" id="shGo">보내기</button>
       </div>
-      <p class="sub" style="margin-top:10px">코드가 없으시면 만든이에게 학교 이름을 알려주세요. 학교마다 하나씩 드립니다.</p>`, true);
+      <p class="sub" style="margin-top:10px">
+        <a href="#" id="shAdmin" style="color:var(--accent)">만든이라면 여기서 쌓인 것 처리</a></p>`, true);
 
+    $('shAdmin').onclick = (e)=>{ e.preventDefault(); this.admin(); };
     $('shGo').onclick = async ()=>{
-      const code = $('shCode').value.trim(), editor = $('shWho').value.trim(), note = $('shNote').value.trim();
-      if (!code) return toast('학교 편집 코드를 넣어주세요.');
-      if (!editor) return toast('고친 분을 적어주세요. 화면에 함께 보입니다.');
+      const editor = $('shWho').value.trim();
+      if (!editor) return toast('보내는 분을 적어주세요.');
       $('shGo').disabled = true;
       try{
-        const j = await this.api('/api/school-save', { op:'save', school:SCHOOL, code, editor, note });
-        this.code = code; lsSet('hs-sim-schoolcode-v4', code);
-        this.edits.set(SCHOOL.name, { editor, note, updatedAt:new Date().toISOString() });
-        closeModal(); renderAll();
-        toast((j.warns||[]).length ? '올렸습니다 — ' + j.warns[0] : '올렸습니다. 이제 모두에게 보입니다.');
+        const j = await this.api({ op:'propose', school:SCHOOL, editor,
+          contact:$('shTo').value.trim(), note:$('shNote').value.trim() });
+        closeModal();
+        toast((j.warns||[]).length
+          ? '보냈습니다 — 살펴볼 것: ' + j.warns[0]
+          : '보냈습니다. 만든이가 확인한 뒤 모두에게 반영됩니다.');
       }catch(e){ $('shGo').disabled = false; toast(e.message); }
     };
-    if ($('shRevert')) $('shRevert').onclick = ()=> doubleConfirm('shRevert',
-      '한 번 더 누르면 공시본으로 되돌립니다.', async ()=>{
-        try{
-          await this.api('/api/school-save', { op:'revert', name:SCHOOL.name, code:$('shCode').value.trim() });
-          this.edits.delete(SCHOOL.name);
-          closeModal();
-          toast('공시본으로 되돌렸습니다. 새로 고치면 반영됩니다.');
-        }catch(e){ toast(e.message); }
-      });
+  },
+
+  /* ── 만든이: 쌓인 것을 한꺼번에 ── */
+  /* 하나씩 열어 보면 결국 안 보게 된다. 한 화면에 늘어놓고 체크해서 한 번에
+     처리할 수 있어야 실제로 처리된다. */
+  admin(){
+    openModal(`<h3>쌓인 고침 제안</h3>
+      <label class="mlab">만든이 코드
+        <input class="minp" id="adPass" type="password" placeholder="관리 코드">
+      </label>
+      <div class="mrow">
+        <button class="mbtn" id="adLoad">대기 중인 것 불러오기</button>
+        <button class="mbtn" id="adAll">전체(처리한 것까지)</button>
+      </div>
+      <div id="adOut"></div>`, true);
+
+    const load = async (status)=>{
+      try{
+        const j = await this.api({ op:'queue', status, passcode:$('adPass').value.trim() });
+        this._pass = $('adPass').value.trim();
+        this.renderQueue(j.proposals || [], status);
+      }catch(e){ toast(e.message); }
+    };
+    $('adLoad').onclick = ()=> load('대기');
+    $('adAll').onclick = ()=> load('전체');
+  },
+
+  renderQueue(rows, status){
+    const out = $('adOut');
+    if (!rows.length){
+      out.innerHTML = `<p class="noteline">${status === '대기' ? '쌓인 제안이 없습니다.' : '아직 아무것도 없습니다.'}</p>`;
+      return;
+    }
+    const line = (p)=>{
+      let doc = {}; try{ doc = JSON.parse(p.json); }catch(e){}
+      const sems = (doc.semesters || []).map(s =>
+        `${s} ${(doc.subjects?.[s] || []).length}과목`).join(' · ');
+      const mine = this.edits.get(p.name);
+      return `<label class="qrow">
+        <input type="checkbox" class="qck" value="${p.id}" ${p.status === '대기' ? '' : 'disabled'}>
+        <span class="qmain">
+          <b>${esc(p.name)}</b>
+          <span class="qst ${p.status === '대기' ? 'wait' : p.status === '반영' ? 'done' : 'hold'}">${esc(p.status)}</span>
+          <span class="qsub">${esc(p.editor)}${p.contact ? ' · ' + esc(p.contact) : ''} · ${esc(String(p.created_at).slice(0,16))}</span>
+          ${p.note ? `<span class="qnote">${esc(p.note)}</span>` : ''}
+          <span class="qsub">${esc(sems)}${mine ? ' · 지금 올라간 판: ' + esc(mine.editor) : ' · 지금은 공시본'}</span>
+          ${p.warns ? `<span class="qwarn">살펴볼 것 — ${esc(p.warns)}</span>` : ''}
+        </span></label>`;
+    };
+    out.innerHTML = `<div class="qlist">${rows.map(line).join('')}</div>
+      <label class="mlab">처리하며 남길 말 (선택)
+        <input class="minp" id="adWhy" placeholder="예) 원본 대조 확인함">
+      </label>
+      <div class="mrow">
+        <button class="mbtn" id="adPick">대기 중인 것 모두 고르기</button>
+        <button class="mbtn" id="adHold">보류</button>
+        <button class="mbtn primary" id="adGo">반영</button>
+      </div>`;
+
+    const ids = ()=> [...out.querySelectorAll('.qck:checked')].map(x => +x.value);
+    $('adPick').onclick = ()=> out.querySelectorAll('.qck:not(:disabled)').forEach(x => x.checked = true);
+    const run = async (action)=>{
+      const pick = ids();
+      if (!pick.length) return toast('처리할 것을 고르세요.');
+      try{
+        const j = await this.api({ op:'decide', ids:pick, action,
+          reviewNote:$('adWhy').value.trim(), passcode:this._pass });
+        const failed = (j.done||[]).filter(d => d.error);
+        toast(`${pick.length - failed.length}건 ${action}했습니다.` + (failed.length ? ` (${failed.length}건 실패)` : ''));
+        if (action === '반영') await this.load();
+        const again = await this.api({ op:'queue', status, passcode:this._pass });
+        this.renderQueue(again.proposals || [], status);
+      }catch(e){ toast(e.message); }
+    };
+    $('adGo').onclick = ()=> run('반영');
+    $('adHold').onclick = ()=> run('보류');
   },
 };
 
