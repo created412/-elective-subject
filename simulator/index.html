@@ -1,4 +1,18 @@
 <!DOCTYPE html>
+<!--
+  고등학교 과목선택 시뮬레이터 (2022 개정 교육과정 · 2026학년도 편제표)
+  © 2026 이재영. CC BY-ND 4.0 — https://creativecommons.org/licenses/by-nd/4.0/deed.ko
+
+  · 그대로 나누어 주는 것은 얼마든지 좋습니다. 학교·연수·수업에 마음껏 쓰세요.
+  · 다만 고쳐서 다시 내놓는 것(2차적 저작물 작성·배포)은 허락하지 않습니다.
+    화면·이름·만든이를 바꾸어 자기 것처럼 내놓는 것도 여기에 들어갑니다.
+  · 고칠 곳이 있으면 고쳐 드립니다. 프로그램 안 「편집」에서 학교 표를 직접
+    고쳐 올릴 수 있고, 그 밖의 것은 만든이에게 알려주세요.
+
+  원본: https://yeonsu-pulse.histo5731.workers.dev/games/credit/
+  학교 편제표는 학교알리미 공시 자료를 옮긴 것으로, 이용조건은 공시 자료를
+  따릅니다. 위 조건은 프로그램에 대한 것입니다.
+-->
 <html lang="ko">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -233,6 +247,17 @@ textarea.einput{min-height:150px;resize:vertical;font-family:ui-monospace,Menlo,
   font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;min-height:40px}
 .mbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .mbtn:disabled{opacity:.45;cursor:not-allowed}
+.mbtn.danger{border-color:#DC2626;color:#DC2626}
+.mlab{display:block;margin:12px 0 0;font-size:12.5px;font-weight:700;color:var(--muted)}
+.minp{display:block;width:100%;margin-top:5px;padding:10px 11px;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px}
+.origin{max-width:1280px;margin:22px auto 30px;padding:14px 18px;border-top:1px solid var(--line);
+  font-size:12px;line-height:1.75;color:var(--faint)}
+.origin b{color:var(--muted)}
+.origin a{color:var(--accent);text-decoration:none}
+.origin .warn{display:block;margin-top:7px;padding:8px 10px;border-radius:8px;
+  background:var(--core-bg);border:1px solid var(--core-line);color:var(--core)}
+.sc-badge.mine{background:var(--accent-soft);color:var(--accent-ink)}
 .err{color:#DC2626;font-size:12px;min-height:16px;margin:6px 0 0}
 .tag .x{border:0;background:transparent;color:inherit;font-weight:900;cursor:pointer;margin-left:2px;padding:0 2px;font-size:12px;line-height:1}
 .editrow{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
@@ -419,6 +444,9 @@ footer.bottom p{max-width:100ch;margin:0 0 6px}
         <button class="mbtn" id="wizBtn">학교 편제표 다시 설정</button>
       </div>
       <div class="editrow">
+        <button class="mbtn" id="shareBtn" style="flex:1">고친 표를 모두가 보게 올리기</button>
+      </div>
+      <div class="editrow">
         <button class="mbtn primary" id="exportBtn" style="flex:1">HTML 내보내기</button>
       </div>
       <button class="ghost danger" id="revertBtn">진로 데이터 원본으로 되돌리기</button>
@@ -439,6 +467,17 @@ footer.bottom p{max-width:100ch;margin:0 0 6px}
     <div class="semgrid" id="semGrid"></div>
   </section>
 </main>
+</div>
+
+<div class="origin" id="originNote">
+  <b>고등학교 과목선택 시뮬레이터</b> · 2022 개정 교육과정 · 2026학년도 편제표 876개교<br>
+  만든이 이재영 · 이용조건 <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.ko"
+    target="_blank" rel="noopener">CC BY-ND 4.0</a> —
+  <b>그대로 나누어 주는 것은 자유, 고쳐서 다시 내놓는 것은 금지</b>합니다.<br>
+  학교 편제표는 학교알리미 공시 자료입니다. 우리 학교 표를 고치시려면 위쪽 <b>편집</b>을 눌러주세요.<br>
+  원본 <a id="originLink" href="https://yeonsu-pulse.histo5731.workers.dev/games/credit/"
+    target="_blank" rel="noopener">yeonsu-pulse.histo5731.workers.dev/games/credit/</a>
+  <span class="warn" id="copyWarn" hidden></span>
 </div>
 
 <div id="toast" role="status"></div>
@@ -1559,7 +1598,9 @@ function schoolPickerBody(filter){
     html += `<div class="sc-region">${esc(r)} <span>${groups[r].length}</span></div>`;
     html += groups[r].map(({s,i})=>{
       const cur = hasSchool() && SCHOOL.name === s.name;
-      const badge = s.verified===false ? '<span class="sc-badge">검수 필요</span>' : '<span class="sc-badge ok">검증</span>';
+      const mine = SHARE.edits.has(s.name);
+      const badge = mine ? '<span class="sc-badge mine">학교가 고침</span>'
+        : s.verified===false ? '<span class="sc-badge">검수 필요</span>' : '<span class="sc-badge ok">검증</span>';
       return `<button class="sc-row${cur?' cur':''}" data-pick="${i}">
         <span class="sc-rn">${esc(s.name)}</span>${badge}${cur?'<span class="sc-cur">사용 중</span>':''}
       </button>`;
@@ -2163,9 +2204,135 @@ $('exportBtn').onclick = async ()=>{
   }catch(e){ toast('다운로드에 실패했습니다. 브라우저 설정을 확인하세요.'); }
 };
 
+
+/* ═══════════ 함께 고친 편제표 ═══════════ */
+/* 이 파일이 품고 있는 876개교는 학교알리미 공시본이다. 공시본은 학교가 실제로
+   여는 표와 어긋날 때가 있다 — 공시 뒤에 바꾼 학교가 있고, 공시 파일이 기계로
+   못 읽히는 모양인 학교도 있다.
+
+   그래서 그 학교 선생님이 직접 고칠 수 있게 했다. 고친 표는 원본 자리에서
+   받아 와 공시본 **위에 덮는다.** 못 받으면(파일로 열었거나 인터넷이 없으면)
+   그냥 공시본으로 돈다 — 어디서 열어도 늘 돌아간다. */
+const SHARE = {
+  home: 'https://yeonsu-pulse.histo5731.workers.dev',
+  edits: new Map(),          // 학교이름 -> { editor, note, updatedAt }
+  code: lsGet('hs-sim-schoolcode-v4', ''),
+
+  async api(path, body){
+    const r = await fetch(this.home + path, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok || !j.ok) throw new Error(j.error || (j.errors||[]).join('\n') || '요청에 실패했습니다.');
+    return j;
+  },
+
+  /** 켤 때 한 번. 실패해도 조용히 넘어간다 — 못 받았다고 프로그램이 멈추면 안 된다 */
+  async load(){
+    let rows = [];
+    try{
+      const r = await fetch(this.home + '/api/schools', { cache:'no-cache' });
+      if (!r.ok) return;
+      rows = (await r.json()).schools || [];
+    }catch(e){ return; }
+    if (!rows.length) return;
+    for (const row of rows){
+      const doc = row.doc; if (!doc || !doc.name) continue;
+      applyAlwaysTaken(doc);
+      this.edits.set(doc.name, { editor:row.editor, note:row.note, updatedAt:row.updatedAt });
+      const at = SCHOOLS.findIndex(s => s.name === doc.name);
+      if (at >= 0) SCHOOLS[at] = doc; else SCHOOLS.push(doc);
+    }
+    // 지금 쓰고 있는 학교가 고쳐졌으면 화면도 새 표로 바꾼다
+    if (hasSchool() && this.edits.has(SCHOOL.name)){
+      SCHOOL = deepCopy(SCHOOLS.find(s => s.name === SCHOOL.name));
+      lsSet(LS.school, SCHOOL);
+      state.picks = state.picks.filter(p => {
+        const [sem, nm] = p.split('|');
+        return (SCHOOL.subjects[sem] || []).some(x => x.name === nm);
+      });
+      persist();
+    }
+    renderAll();
+  },
+
+  /** 지금 보고 있는 표가 공시본인지, 학교가 고친 것인지 */
+  mark(name){
+    const e = this.edits.get(name);
+    if (!e) return '';
+    const day = String(e.updatedAt || '').slice(0, 10);
+    return `${esc(e.editor)} 선생님이 고침${day ? ' · ' + day : ''}`;
+  },
+
+  /* ── 올리기 ── */
+  open(){
+    if (!hasSchool()) return toast('먼저 학교를 고르거나 편제표를 넣어주세요.');
+    const mine = this.mark(SCHOOL.name);
+    openModal(`<h3>${esc(SCHOOL.name)} 편제표를 모두가 보게 올리기</h3>
+      <p class="sub">올리면 <b>곧바로</b> 이 시뮬레이터를 여는 모든 사람에게 이 표가 보입니다.
+         학교알리미 공시본은 지워지지 않고 그대로 남아, 언제든 되돌릴 수 있습니다.</p>
+      ${mine ? `<p class="noteline">지금 올라가 있는 판: ${mine}</p>` : ''}
+      <label class="mlab">학교 편집 코드
+        <input class="minp" id="shCode" type="password" placeholder="학교마다 다릅니다" value="${escA(this.code)}">
+      </label>
+      <label class="mlab">고친 분
+        <input class="minp" id="shWho" placeholder="예) 신봉고 김○○ (교육과정부)">
+      </label>
+      <label class="mlab">무엇을 고쳤는지 한 줄
+        <input class="minp" id="shNote" placeholder="예) 2학기 예술 묶음 택1 로 바로잡음">
+      </label>
+      <div class="mrow">
+        <button class="mbtn" onclick="closeModal()">취소</button>
+        <button class="mbtn primary" id="shGo">올리기</button>
+        ${mine ? '<button class="mbtn danger" id="shRevert">공시본으로 되돌리기</button>' : ''}
+      </div>
+      <p class="sub" style="margin-top:10px">코드가 없으시면 만든이에게 학교 이름을 알려주세요. 학교마다 하나씩 드립니다.</p>`, true);
+
+    $('shGo').onclick = async ()=>{
+      const code = $('shCode').value.trim(), editor = $('shWho').value.trim(), note = $('shNote').value.trim();
+      if (!code) return toast('학교 편집 코드를 넣어주세요.');
+      if (!editor) return toast('고친 분을 적어주세요. 화면에 함께 보입니다.');
+      $('shGo').disabled = true;
+      try{
+        const j = await this.api('/api/school-save', { op:'save', school:SCHOOL, code, editor, note });
+        this.code = code; lsSet('hs-sim-schoolcode-v4', code);
+        this.edits.set(SCHOOL.name, { editor, note, updatedAt:new Date().toISOString() });
+        closeModal(); renderAll();
+        toast((j.warns||[]).length ? '올렸습니다 — ' + j.warns[0] : '올렸습니다. 이제 모두에게 보입니다.');
+      }catch(e){ $('shGo').disabled = false; toast(e.message); }
+    };
+    if ($('shRevert')) $('shRevert').onclick = ()=> doubleConfirm('shRevert',
+      '한 번 더 누르면 공시본으로 되돌립니다.', async ()=>{
+        try{
+          await this.api('/api/school-save', { op:'revert', name:SCHOOL.name, code:$('shCode').value.trim() });
+          this.edits.delete(SCHOOL.name);
+          closeModal();
+          toast('공시본으로 되돌렸습니다. 새로 고치면 반영됩니다.');
+        }catch(e){ toast(e.message); }
+      });
+  },
+};
+
+/* ═══════════ 어디서 열렸는가 ═══════════ */
+/* 원본이 아닌 자리에서 열렸으면 조용히 알려 준다. 막을 수는 없다 — 파일을
+   가진 사람은 무엇이든 할 수 있다. 다만 **손댄 사본인지 아닌지를 보는 사람이
+   알 수 있게** 해 둔다. 학생이 낡은 표로 시간표를 짜는 것이 제일 나쁘다. */
+(function(){
+  const HOME = 'yeonsu-pulse.histo5731.workers.dev';
+  const here = location.hostname;
+  const el = $('copyWarn'); if (!el) return;
+  if (!here || here === HOME || here === 'created412.github.io') return;
+  el.hidden = false;
+  el.innerHTML = here
+    ? '이 사본은 원본이 아닙니다. 편제표가 낡았을 수 있으니 <b>원본</b>에서 확인하세요.'
+    : '파일로 열려 있어 고쳐진 편제표를 받아오지 못했습니다. 원본 주소에서 열면 최신 표로 보입니다.';
+})();
+
 /* ═══════════ 시작 ═══════════ */
 $('schoolBtn').onclick = openSchoolPicker;
+$('shareBtn').onclick = ()=> SHARE.open();
 renderAll();
 if (!hasSchool()) openSchoolPicker();
+SHARE.load();
 </script>
 </html>
