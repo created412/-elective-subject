@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!-- 고등학교 과목선택 시뮬레이터 개인정보 처리방침 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개인정보 처리방침 · 고등학교 과목선택 시뮬레이터</title>
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --line:#DFE5EA; --ink:#17222D; --muted:#5D6C7B;
+  --accent:#0E6E73; --accent-soft:#E3F1F1;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#10171D; --surface:#18222B; --line:#2A3743; --ink:#E6EDF3; --muted:#9AA8B5;
+         --accent:#5CC4C9; --accent-soft:#16363A; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.75}
+.wrap{max-width:860px;margin:0 auto;padding:32px 18px 60px}
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:34px 30px}
+h1{font-size:24px;margin:0 0 6px;line-height:1.4}
+.lead{color:var(--muted);margin:0 0 22px}
+h2{font-size:17px;margin:30px 0 8px;padding-top:14px;border-top:1px solid var(--line);color:var(--accent)}
+h2:first-of-type{border-top:0;padding-top:0}
+p{margin:6px 0}
+ul{margin:6px 0;padding-left:22px}
+li{margin:3px 0}
+.tbl{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft);white-space:nowrap}
+.box{background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin:10px 0}
+.meta{margin-top:30px;color:var(--muted);font-size:14px}
+a{color:var(--accent)}
+.back{display:inline-block;margin-bottom:14px;font-size:14px}
+@media print{
+  body{background:#fff;font-size:10.5pt;line-height:1.55}
+  .wrap{padding:0;max-width:none}
+  .doc{border:0;padding:0}
+  .back{display:none}
+  h2{break-after:avoid}
+  table,.box{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="../simulator/">← 과목선택 시뮬레이터로</a>
+<div class="doc">
+<h1>개인정보 처리방침</h1>
+<p class="lead">「고등학교 과목선택 시뮬레이터」(이하 ‘시뮬레이터’, https://created412.github.io/-elective-subject/simulator/)를 만든 이재영(이하 ‘운영자’)은 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고 관련 고충을 신속하게 처리하기 위하여 다음과 같이 개인정보 처리방침을 둡니다.</p>
+
+<div class="box"><b>요약</b> — 시뮬레이터는 회원가입·로그인이 없으며, 학생이 과목을 고르는 기능에서는 개인정보를 수집하지 않습니다. 과목 선택 내용은 이용자의 기기(브라우저) 안에만 저장되고 운영자에게 전송되지 않습니다. 개인정보는 교사 등이 학교 편제표의 오류를 알려 주는 <b>「고친 편제표 보내기」</b> 기능을 이용할 때에만 최소한으로 받습니다.</div>
+
+<h2>제1조 (개인정보의 처리 목적)</h2>
+<p>운영자는 다음 목적을 위해서만 개인정보를 처리하며, 목적이 바뀌는 경우 「개인정보 보호법」 제18조에 따라 별도의 동의를 받는 등 필요한 조치를 합니다.</p>
+<ul>
+  <li>「고친 편제표 보내기」로 접수된 편제표 수정 제안의 확인·검토</li>
+  <li>제안 내용이 불분명할 때 보낸 분에게 되묻기(연락)</li>
+  <li>반영된 편제표에 고친 분을 표시하여 수정 이력을 밝히기</li>
+</ul>
+
+<h2>제2조 (처리하는 개인정보의 항목 및 수집 방법)</h2>
+<div class="tbl"><table>
+  <tr><th>구분</th><th>항목</th><th>수집 방법</th></tr>
+  <tr><td>과목 선택(학생·학부모·교사)</td><td>수집하지 않음<br><small>학교·학과·과목 선택 내용은 이용자 기기의 브라우저 저장소(localStorage)에만 저장되며 운영자에게 전송되지 않음</small></td><td>–</td></tr>
+  <tr><td>고친 편제표 보내기 — 필수</td><td>보내는 분(학교명·성명·담당 업무)</td><td rowspan="2">이용자가 입력란에 직접 입력하여 보냄</td></tr>
+  <tr><td>고친 편제표 보내기 — 선택</td><td>되물을 곳(전화번호 또는 이메일)</td></tr>
+</table></div>
+<ul>
+  <li>입력 길이를 제한(보내는 분 40자, 되물을 곳 80자)하여 필요 이상의 정보가 들어오지 않도록 합니다.</li>
+  <li>주민등록번호 등 고유식별정보, 민감정보, 학생의 개인정보는 수집하지 않습니다.</li>
+  <li>웹페이지 제공 과정에서 호스팅 사업자(제6조)의 서버에 접속 IP, 접속 일시, 브라우저 정보 등 접속기록이 자동으로 기록될 수 있으나, 운영자는 이를 따로 수집·이용하지 않습니다.</li>
+</ul>
+
+<h2>제3조 (개인정보의 처리 및 보유 기간)</h2>
+<div class="tbl"><table>
+  <tr><th>항목</th><th>보유 기간</th></tr>
+  <tr><td>되물을 곳(전화번호·이메일)</td><td>제안의 반영·보류 처리를 마친 날로부터 3개월</td></tr>
+  <tr><td>보내는 분(학교명·성명·담당 업무)</td><td>반영되지 않은 제안: 처리를 마친 날로부터 3개월<br>반영된 제안: 해당 학년도 편제표를 게시하는 동안(해당 학년도 말까지)</td></tr>
+</table></div>
+<p>보유 기간이 지나기 전이라도 정보주체가 삭제를 요구하면 지체 없이 파기합니다.</p>
+
+<h2>제4조 (개인정보의 파기 절차 및 방법)</h2>
+<ul>
+  <li>보유 기간이 끝났거나 처리 목적이 달성된 개인정보는 지체 없이(5일 이내) 파기합니다.</li>
+  <li>전자적 파일 형태의 정보는 데이터베이스에서 복구할 수 없도록 삭제하며, 종이 출력물은 만들지 않습니다.</li>
+</ul>
+
+<h2>제5조 (개인정보의 제3자 제공)</h2>
+<p>운영자는 개인정보를 제3자에게 제공하지 않습니다. 다만 법령에 특별한 규정이 있는 경우에는 예외로 합니다.</p>
+<p>반영된 편제표에는 ‘보내는 분’ 란에 적은 내용이 「○○ 고침」 형태로 시뮬레이터 화면에 표시됩니다. 되물을 곳(연락처)은 어떠한 경우에도 화면에 표시하거나 공개하지 않습니다.</p>
+
+<h2>제6조 (개인정보 처리의 위탁 및 국외 이전)</h2>
+<p>운영자는 서비스 제공을 위해 다음과 같이 개인정보 처리 업무를 위탁하며, 수탁자의 서버가 국외에 있어 개인정보가 국외로 이전됩니다.</p>
+<div class="tbl"><table>
+  <tr><th>수탁자</th><th>위탁 업무</th><th>이전 국가·방법</th><th>이전 항목</th><th>보유 기간</th></tr>
+  <tr><td>Cloudflare, Inc.<br><small>privacy@cloudflare.com</small></td><td>편제표 제안 접수 서버 및 데이터베이스 운영(저장)</td><td>미국 등 Cloudflare 데이터센터 소재국 / 제안을 보낼 때 네트워크로 전송</td><td>보내는 분, 되물을 곳</td><td>제3조의 보유 기간 또는 위탁 계약 종료 시까지</td></tr>
+  <tr><td>GitHub, Inc.</td><td>웹페이지 호스팅(GitHub Pages)</td><td>미국 / 페이지 접속 시 네트워크로 전송</td><td>접속기록(접속 IP 등)</td><td>수탁자 정책에 따름</td></tr>
+</table></div>
+<p>국외 이전을 원하지 않는 경우 「고친 편제표 보내기」를 이용하지 않거나, 제11조의 이메일로 편제표 오류를 알려 주시면 됩니다. 이 경우에도 시뮬레이터의 과목 선택 기능은 제한 없이 이용할 수 있습니다.</p>
+
+<h2>제7조 (정보주체의 권리·의무 및 행사 방법)</h2>
+<ul>
+  <li>정보주체는 운영자에게 언제든지 자신의 개인정보 <b>열람·정정·삭제·처리정지</b>를 요구할 수 있습니다.</li>
+  <li>요구는 제11조의 이메일로 ‘보낸 날짜, 학교명, 보내는 분 이름’과 원하는 조치를 적어 보내시면 되며, 운영자는 요구를 받은 날로부터 10일 이내에 조치하고 결과를 알려 드립니다.</li>
+  <li>법정대리인이나 위임을 받은 사람을 통해서도 요구할 수 있으며, 이 경우 위임 사실을 확인할 수 있는 자료를 함께 보내 주셔야 합니다.</li>
+  <li>기기에 저장된 과목 선택 내용은 브라우저의 ‘사이트 데이터 삭제’ 기능으로 이용자가 직접 언제든지 지울 수 있습니다.</li>
+</ul>
+
+<h2>제8조 (만 14세 미만 아동의 개인정보 보호)</h2>
+<ul>
+  <li>시뮬레이터는 고등학생과 교사·학부모를 위한 도구이며, 회원가입이 없고 과목 선택 기능에서는 개인정보를 수집하지 않습니다.</li>
+  <li>개인정보를 받는 「고친 편제표 보내기」는 학교 편제표를 다루는 교사용 기능으로, <b>만 14세 미만 아동의 개인정보는 수집하지 않습니다.</b></li>
+  <li>만 14세 미만 아동의 개인정보가 접수된 사실을 알게 된 경우, 법정대리인의 동의를 받지 않은 정보로 보고 지체 없이 파기합니다. 법정대리인은 제7조의 방법으로 아동 개인정보의 열람·삭제 등을 요구할 수 있습니다.</li>
+</ul>
+
+<h2>제9조 (개인정보의 안전성 확보 조치)</h2>
+<ul>
+  <li><b>관리적 조치</b>: 개인정보를 다루는 사람을 운영자 1인으로 한정하고, 보유 기간이 지난 정보를 정기적으로 확인·파기합니다.</li>
+  <li><b>기술적 조치</b>: 모든 전송 구간을 HTTPS로 암호화합니다. 접수된 제안 목록은 운영자 인증 코드가 있어야만 조회할 수 있도록 접근을 통제하며, 되물을 곳(연락처)은 공개 조회 기능에서 제외합니다. 입력값의 길이와 형식을 검사하여 비정상 입력을 차단합니다.</li>
+  <li><b>물리적 조치</b>: 개인정보는 운영자의 개인 기기에 따로 내려받아 보관하지 않고, 수탁자의 보호 조치가 적용된 데이터센터에만 보관합니다.</li>
+</ul>
+
+<h2>제10조 (개인정보 자동 수집 장치의 설치·운영 및 거부)</h2>
+<ul>
+  <li>시뮬레이터는 쿠키(cookie)와 방문 분석 도구를 사용하지 않습니다.</li>
+  <li>화면 설정과 과목 선택 내용을 다시 불러오기 위해 브라우저 저장소(localStorage)를 사용하며, 이 정보는 이용자 기기 안에만 남고 운영자에게 전송되지 않습니다. 브라우저 설정에서 사이트 데이터를 삭제하거나 저장을 막을 수 있습니다.</li>
+</ul>
+
+<h2>제11조 (개인정보 보호책임자)</h2>
+<div class="tbl"><table>
+  <tr><th>개인정보 보호책임자</th><td>이재영 (고등학교 과목선택 시뮬레이터 만든이, 경기도 고등학교 교사)</td></tr>
+  <tr><th>연락처</th><td>이메일 <a href="mailto:histo5731@gmail.com">histo5731@gmail.com</a></td></tr>
+</table></div>
+<p>개인정보 보호와 관련한 문의, 불만 처리, 피해 구제 등은 위 연락처로 알려 주시면 지체 없이 답변·처리해 드립니다.</p>
+
+<h2>제12조 (권익침해 구제 방법)</h2>
+<p>개인정보 침해로 인한 구제를 받으려면 아래 기관에 분쟁 해결이나 상담을 신청할 수 있습니다.</p>
+<ul>
+  <li>개인정보분쟁조정위원회: (국번없이) 1833-6972 (www.kopico.go.kr)</li>
+  <li>개인정보침해신고센터: (국번없이) 118 (privacy.kisa.or.kr)</li>
+  <li>대검찰청: (국번없이) 1301 (www.spo.go.kr)</li>
+  <li>경찰청: (국번없이) 182 (ecrm.police.go.kr)</li>
+</ul>
+
+<h2>제13조 (개인정보 처리방침의 변경)</h2>
+<p>이 개인정보 처리방침은 2026년 9월 15일부터 적용됩니다. 내용이 바뀌는 경우 적용 7일 전부터 이 페이지를 통해 알립니다.</p>
+
+<p class="meta">공고일자 2026년 9월 15일 · 시행일자 2026년 9월 15일</p>
+</div>
+</div>
+</body>
+</html>
